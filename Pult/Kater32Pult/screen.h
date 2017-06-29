@@ -1,4 +1,5 @@
-
+void update_screen(bool refresh);
+void update_main_screen(bool refresh);
 void update_ubort();
 void update_ibort();
 void update_kurs();
@@ -12,29 +13,29 @@ void update_sonar_deep();
 void update_sonar_data();
 void drawHeading(uint8_t compas, uint16_t color);
 
-#define XUBORT 2
+#define XUBORT 10
 #define YUBORT 0
 
-#define XIBORT 80
-#define YIBORT 0
+#define XIBORT 10
+#define YIBORT 20
 
-#define XSONAR 150
-#define WSONAR 134
+#define XSONAR 90
+#define WSONAR 194
 #define YSONAR 0
 #define HSONAR 240
 
-#define XDEEP 170
+#define XDEEP 120
 #define YDEEP 10
 
-#define XPOINT 2
-#define YPOINT 100
+#define XPOINT 18
+#define YPOINT 126
 
 #define BUF_CNT WSONAR
 
 #define TWIDTH 3 // ширина трешолда
 
-#define XVECTOR  71
-#define YVECTOR  56
+#define XVECTOR  40
+#define YVECTOR  78
 
 uint8_t buf[BUF_CNT][30]; // карта эхолота
 
@@ -62,6 +63,7 @@ const stVector vector[16] = {
   { -13, -32}
 };
 
+////////////////////////////////////////////////////////////////////
 
 void screen_setup(){
   tft.begin(); 
@@ -83,7 +85,11 @@ void screen_setup(){
   }
 }
 
-void update_screen(bool refresh=false) {
+void update_screen(bool refresh=false){
+  update_main_screen(refresh);
+}
+
+void update_main_screen(bool refresh=false) {
   if (refresh) refresh_static();
   if (old.ubort != radio.ubort) update_ubort();
   if (old.ibort != radio.ibort) update_ibort();
@@ -129,7 +135,7 @@ void update_lineika(){
 
 void update_treshold() {
   for (byte i=0; i<TWIDTH; i++) {
-    tft.drawFastVLine(XSONAR-TWIDTH-1+i, 240-radio.sonar_treshold, radio.sonar_treshold, ILI9341_YELLOW);  
+    tft.drawFastVLine(XSONAR-TWIDTH-1+i, 240-radio.sonar_treshold, radio.sonar_treshold, ILI9341_RED);  
   }
   old.sonar_treshold = radio.sonar_treshold;    
 }
