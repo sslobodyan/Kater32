@@ -82,5 +82,8 @@ void set_init(){
   radio.sonar_speed = 1;
   radio.gps.idx = 14;
   radio.gps.kurs = 7;
+  radio.gps.sat_cnt = 17;
+  radio.gps.sat_fix = 1;
+  radio.gps.sat_speed = 61;
 }
 
