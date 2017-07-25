@@ -1,31 +1,62 @@
-
-struct stGps { // 12 bytes
-  uint32_t lat=491234567; //4
-  uint32_t lon=211234567; //4 
-  uint8_t sat_speed=12; //1
-  uint8_t sat_cnt:5; //1
-  uint8_t sat_fix:1;
-  uint8_t light:2;
-  uint8_t kurs=45; //1 по 2 градуса\отсчет (0-180)
-  uint8_t idx:4;  // 1   16 точек
-  uint8_t mode:1; // 0-ручной, 1-автопилот
-  uint8_t fill:1; // 0=пустая точка, 1-точка с координатами
-  uint8_t bunker:2;   // статус двух бункеров 0-закрыт, 1-открыт
+struct stSonarControl { // 2
+  uint8_t delta:6;
+  uint8_t speed:1;
+  uint8_t treshold;
 };
 
-struct stRadio { //4+12+32=48bytes
-  stGps gps;
-  uint8_t ubort=125; //1
-  uint8_t ibort=46; //1
-  uint16_t id; //2 идентификатор получателя - подхватывается при спаривании
-  uint8_t sonar_speed:1;  //1   0-9м, 1-18м
-  uint8_t sonar_delta:5;  // 32м смещение в глубину
-  uint8_t sonar_cnt:2;  // счетчик, перебрасывается при каждом новом эхе
-  uint8_t sonar_deep; //1 глубина по эху без учета дельты
-  uint8_t sonar_data[30]; //30
-  uint8_t sonar_treshold; // 1 чисто для индикатора чувствительности
-  uint8_t sonar_level; // уровень эха на дне
-  uint8_t mode; // режим - какую переменную меняем
-  uint8_t debug;
+struct stLight { // 1
+  uint8_t light:2;
+  uint8_t bunker:2;  
+};
+
+struct stPoint { // 8
+  uint32_t lat;
+  uint32_t lon;
+};
+
+struct stSat { // 3
+  uint8_t speed; // 1
+  uint8_t cnt:6; // 1
+  uint8_t fix:1;
+  uint8_t second; // 1
+};
+
+struct stSonar { //64
+  uint8_t map[60];
+  uint8_t deep; // глубина / 10 (прибавить еще delta для реального результата до 25.5+32)
+  uint8_t level; // уровень сигнала на дне
+  uint8_t treshold;
+  uint8_t delta:5; // сдвиг окна в целых метрах
+  uint8_t speed:1; // скорость сканирования
+  uint8_t cnt:2; // счетчик номера сканирования
+};
+
+struct stGps { // 12 
+  stPoint coord; //8
+  stSat sat; //3
+};
+
+
+////////////////////////// передается на катер //////////////////
+struct stControl { // 24
+  uint8_t rul;
+  uint8_t gaz;
+  stLight light; //1 
+  stSonarControl sonar; //2
+  stPoint point; // 8
+  stPoint home; // 8
 }; 
+/////////////////////////////////////////////////////////////////
+
+/////// приходит с катера ////////////////////////
+struct stTelemetry { // 80 
+  uint8_t bort; // 1
+  uint8_t tok;  // 1
+  uint8_t kurs; // 1
+  uint8_t rezerv; // может состояние света и кузова ?
+  stGps gps; // 12
+  stSonar sonar; // 64
+};
+//////////////////////////////////////////////////
+
 

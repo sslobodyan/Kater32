@@ -9,81 +9,75 @@
 #include "radio.h"
 #include "vars.h"
 #include "screen.h"
+#include "libs.h"
 
 
-uint32_t tm;
-#define INTERVAL 200
 
-void set_init();
+uint32_t tm, tm_loop;
+#define INTERVAL 80
+
+void scan_controls();
+void send_paket();
+void init_vars();
 
 void setup() {
-  byte i = sizeof(radio);  
 
   screen_setup();
   
-  HC12.begin(9600);
-  ET.begin(details(radio), &HC12);
+  HC12.begin(38400);
+  Pult.begin(details(ctrl), &HC12);
+  Kater.begin(details(tlm), &HC12);
 
   pinMode(LED, OUTPUT);
   LED_ON;
-  tm = millis();  
+  tm, tm_loop = millis();  
+
+  init_vars();
+  update_screen(true); // refresh statik
   
-  set_init();
-  
-  update_screen(true);
-  
-  old.ubort = 2;
-  old.ibort = 2;
 }
 
-uint32_t tm_test = millis();
 
 void loop() {
-  if(ET.receiveData()){
-    // обработка принятого пакета
-    LED_ON;
-    tm = millis();
-    update_screen();
-  }
 
-  if ( millis() - tm > INTERVAL ) {
-    tm = 0;
+  if ( millis() - tm > 500 ) { // гасим светодиод принятого пакета
     LED_OFF;
   }
 
-  if ( millis() > tm_test ) {
-    radio.sonar_cnt += 1;
-    radio.sonar_deep += 1; 
-    radio.gps.kurs += 1;
-    if (radio.gps.kurs > 179) radio.gps.kurs = 0;
-    tm_test = millis() + 200; 
+  if (HC12.available()) {
+    //LED_ON; tm = millis();    
+  }
+
+  if(Kater.receiveData()){ // обработка принятого пакета
+    LED_ON;
+    tm = millis();
+  }
+
+  if ( millis() > tm_loop ) { // прошло 80 мс
+    tm_loop = millis() + INTERVAL;
+    
+    scan_controls();
+
+    send_paket();
+    
     update_screen();
   }
   
 }
 
-void set_init(){
-  old.ubort = 2;
-  old.ibort = 2;  
-  old.sonar_speed = 0;  
-  old.sonar_delta = 2;  
-  old.sonar_cnt = 1;
-  old.sonar_deep = 12;  
-  old.gps.sat_cnt = 8;  
-  old.gps.sat_fix = 1;  
-  old.gps.kurs = 125;  
-  old.gps.idx = 1;  
-  old.gps.fill = 1;  
-  old.gps.bunker  = 0b11;  
-  old.sonar_treshold = 35;
-  radio.sonar_treshold = 43;
-  radio.sonar_deep = 123;
-  radio.sonar_delta = 2;
-  radio.sonar_speed = 1;
-  radio.gps.idx = 14;
-  radio.gps.kurs = 7;
-  radio.gps.sat_cnt = 17;
-  radio.gps.sat_fix = 1;
-  radio.gps.sat_speed = 61;
+
+void init_vars() {
+  old.kurs = 99;
+  old.gps.sat.cnt = 1;
+  old.gps.sat.speed = 9;
+  old.bort = 1;
+  old.tok = 1;
+  old.sonar.delta = 3;
+  tlm.sonar.speed=0;
+  tlm.bort=114;
+  tlm.tok=39;
+  tlm.kurs=45;
+  tlm.sonar.cnt=2;
+  tlm.sonar.treshold = 59;
 }
 
