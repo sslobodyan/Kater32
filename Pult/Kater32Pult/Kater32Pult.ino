@@ -5,6 +5,7 @@
 #include <EasyTransfer.h>
 
 #define HC12 Serial2
+#define DBG Serial1 // a9
 
 #include "radio.h"
 #include "vars.h"
@@ -25,6 +26,7 @@ void setup() {
   screen_setup();
   
   HC12.begin(38400);
+  DBG.begin(115200);
   Pult.begin(details(ctrl), &HC12);
   Kater.begin(details(tlm), &HC12);
 

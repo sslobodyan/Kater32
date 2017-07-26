@@ -79,6 +79,7 @@ void screen_setup(){
   tft.setTextSize(2);
   tft.setRotation(3);
   //tft.println( sizeof(ctrl) ); tft.println( sizeof(tlm) ); delay(200);
+#ifdef RRR  
   for (byte row=0; row < BUF_CNT; row++) {
     byte r = random(1,28);
     for (byte i=0; i<60; i++) {
@@ -90,6 +91,7 @@ void screen_setup(){
       }
     }
   }
+#endif  
 }
 
 void update_screen(bool refresh=false){
@@ -235,18 +237,48 @@ bool is_point_fill( stPoint point ) {
 void update_point(){
   tft.setCursor(XPOINT, YPOINT);
   tft.setTextSize(4);
-  if ( is_point_fill( points[point_idx] ) ) tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
+  if ( ! is_point_fill( points[point_idx] ) ) tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
   else tft.setTextColor(ILI9341_BLACK,ILI9341_WHITE);
   tft.print( point_idx );
+}
+
+struct stLimit {
+  byte tresh;
+  byte r;
+  byte g;
+  byte b;
+} lim[] = {
+  {0, 0x00, 0x00, 0x00}, // черный
+  {1, 0xFF, 0xFF, 0xFF}, // белый
+  {5, 0x00, 0xFF, 0x00}, // зеленый
+  {8, 0xFF, 0xFF, 0x00}, // желтый #FFFF00
+  {13, 0xFF, 0x00, 0x00}  // красный
+};
+
+uint16_t get_color(uint8_t dat) {
+  byte r=255, g=0, b=0;
+  uint16_t clr;
+
+  for (byte i=0; i<sizeof(lim)/4; i++) {
+    if (dat < lim[i].tresh) {
+      r = map(dat, lim[i-1].tresh, lim[i].tresh, lim[i-1].r, lim[i].r);
+      g = map(dat, lim[i-1].tresh, lim[i].tresh, lim[i-1].g, lim[i].g);
+      b = map(dat, lim[i-1].tresh, lim[i].tresh, lim[i-1].b, lim[i].b);
+      break;
+    }
+  }
+
+  clr = tft.color565(r, g, b);
+  return clr;
 }
 
 void update_sonar_data(){
 #define WONECHAR 17 // ширина одной цифры в большом шрифте
     
-  uint16_t x, y;
-  uint8_t dat, row, i, cnt=0;
+  uint16_t x;
+  uint8_t dat, row, i, cnt=0, y;
   uint16_t col[240], x_deep;
-  float f = (float) tlm.sonar.deep / 10.0;
+  float f = (float) tlm.sonar.deep / 10.0 + tlm.sonar.delta;
 
   // сдвигаем влево буфер buf[WSONAR/2][30];
   int n = 60*(BUF_CNT-1);
@@ -255,30 +287,35 @@ void update_sonar_data(){
   //запоминаем текущее эхо
   memcpy(&(buf[BUF_CNT-1][0]), &(tlm.sonar.map[0]), 60);
 
+  //for(byte q=0; q<60; q++) { DBG.print(tlm.sonar.map[q],HEX);DBG.print(","); }
+
   x = XSONAR;
   tft.setTextSize(3);
   tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
   x_deep = XDEEP+WONECHAR;
   for (row=0; row < BUF_CNT; row++) {
     y = 0;
-    for (i=0; i<30; i++) {
+    for (i=0; i<60; i++) {
       bool pnt = false;
       dat = buf[row][i];
-      for (byte n=0; n<8; n++) {
-        pnt = dat > 127 ? true : false;
-        dat = dat << 1;
-        if (pnt) {
-          col[i*8+n] = ILI9341_ORANGE;
-          //tft.drawPixel(x, y+YSONAR, ILI9341_RED);
-          //tft.drawPixel(x+1, y+YSONAR, ILI9341_RED);      
-        } else {
-          col[i*8+n] = ILI9341_BLACK;
-          //tft.drawPixel(x, y+YSONAR, ILI9341_BLACK);
-          //tft.drawPixel(x+1, y+YSONAR, ILI9341_BLACK);                
-        }
-        y += 1;
+      byte b1, b2;
+      b1 = dat >> 4;
+      b2 = dat & 0b1111;
+/*      
+      if (row == BUF_CNT-1) { 
+        DBG.print(dat,HEX);DBG.print(",");
+        DBG.print(b1,HEX);DBG.print(",");DBG.print(b2,HEX);DBG.print(", "); 
       }
+*/      
+      uint16_t c = get_color(b1);
+      col[y++] = c;
+      col[y++] = c;
+
+      c = get_color(b2);
+      col[y++] = c;
+      col[y++] = c;
     }
+    //if (row == BUF_CNT-1) DBG.println();
     tft.setAddrWindow(x, YSONAR, x, YSONAR-1);    
     
     tft.drawDMABuffer(col, x, YSONAR, 1, 240-YSONAR); x += 1;

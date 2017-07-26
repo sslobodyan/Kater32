@@ -18,6 +18,7 @@ struct stSat { // 3
   uint8_t speed; // 1
   uint8_t cnt:6; // 1
   uint8_t fix:1;
+  uint8_t present:1;
   uint8_t second; // 1
 };
 
@@ -39,8 +40,8 @@ struct stGps { // 12
 
 ////////////////////////// передается на катер //////////////////
 struct stControl { // 24
-  uint8_t rul;
-  uint8_t gaz;
+  int8_t rul;
+  int8_t gaz;
   stLight light; //1 
   stSonarControl sonar; //2
   stPoint point; // 8
