@@ -1,3 +1,10 @@
+#define LED PC13
+#define LED_ON digitalWrite(LED,LOW)
+#define LED_OFF digitalWrite(LED,HIGH)
+#define LED_TOGGLE digitalWrite(LED,!digitalRead(LED))
+
+
+
 struct stSonarControl { // 2
   uint8_t delta:6;
   uint8_t speed:1;

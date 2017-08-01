@@ -120,8 +120,8 @@ void update_main_screen(bool refresh=false) {
 }
 
 void update_lineika(){
-#define PIXEL_IN_M_0 45.977 // 240 / (1450*120*0.00006/2)
-#define PIXEL_IN_M_1 22.989
+#define PIXEL_IN_M_0 49.2611 // 240 / (1450*120*0.00006/2)
+#define PIXEL_IN_M_1 PIXEL_IN_M_0/2
 
   float pixel_in_m;
   uint16_t x;
@@ -337,7 +337,7 @@ void update_sonar_data(){
         case 1:
           d = f;
           f -= d;
-          tft.setCursor(x-WONECHAR, YDEEP);
+          tft.setCursor(x-WONECHAR-3, YDEEP);
           tft.print(d);
           cnt += 1;
           x_deep += WONECHAR;

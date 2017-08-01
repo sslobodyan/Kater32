@@ -41,12 +41,12 @@ void init_servo() {
     pinMode(PB1, PWM); //ch4
   
     Timer3.pause(); // while we configure
-    Timer3.setPrescaleFactor(72);     // 1Mhz - 1mks
+    Timer3.setPrescaleFactor(71);     // 1Mhz - 1mks
     Timer3.setChannel1Mode(TIMER_PWM);
     Timer3.setChannel2Mode(TIMER_PWM);
     Timer3.setChannel3Mode(TIMER_PWM);
     Timer3.setChannel4Mode(TIMER_PWM);
-    Timer3.setOverflow(20000);   // Total time 20ms
+    Timer3.setOverflow(19999);   // Total time 20ms
 
     Timer3.setCount(0);         
     Timer3.resume();            

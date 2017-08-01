@@ -52,6 +52,7 @@ void loop() {
 
   if(Kater.receiveData()){ // обработка принятого пакета
     LED_ON;
+    for (byte i=0; i<40; i++) { DBG.print( tlm.sonar.map[i],HEX ); DBG.print( "," ); } DBG.println();
     tm = millis();
   }
 
