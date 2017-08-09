@@ -73,25 +73,25 @@ const stVector vector[16] = {
 ////////////////////////////////////////////////////////////////////
 
 void screen_setup(){
+
+#ifdef REMAP_SPI1
+
+  afio_cfg_debug_ports(AFIO_DEBUG_SW_ONLY); // relase PC3 and PC5 
+  afio_remap(AFIO_REMAP_SPI1); // remap SPI1
+
+  gpio_set_mode(GPIOB, 3, GPIO_AF_OUTPUT_PP);
+  gpio_set_mode(GPIOB, 4, GPIO_INPUT_FLOATING);
+  gpio_set_mode(GPIOB, 5, GPIO_AF_OUTPUT_PP);
+  
+#endif
+  
   tft.begin(); 
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextColor(ILI9341_YELLOW); 
   tft.setTextSize(2);
   tft.setRotation(3);
   //tft.println( sizeof(ctrl) ); tft.println( sizeof(tlm) ); delay(200);
-#ifdef RRR  
-  for (byte row=0; row < BUF_CNT; row++) {
-    byte r = random(1,28);
-    for (byte i=0; i<60; i++) {
-      buf[row][i] = 0;
-      if (row<60) {
-        if (i<row) buf[row][i] = 0x00; else buf[row][i] = row; // debug
-      } else {
-        if (i<r) buf[row][i] = 0x00; else buf[row][i] = 0xFF; // debug
-      }
-    }
-  }
-#endif  
+
 }
 
 void update_screen(bool refresh=false){

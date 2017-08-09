@@ -80,6 +80,32 @@ uint8_t press_dat(uint16_t dat) {
   else return 0;
 }
 
+uint8_t deep120() { // глубина по 120 буферу
+  uint8_t width_dno = 10;
+  uint8_t i,n,k;
+  bool dno;
+  float f;
+  for (i=0; i<BUF120_LEN; i++) {
+    k = (i+width_dno)<BUF120_LEN ? (i+width_dno) : BUF120_LEN;
+    if ( buf120[i] > 2000) {
+      dno = true;
+      for (n=i; n<k; n++) {
+        if ( buf120[n] < 2000 ) {// todo ???
+          dno = false;
+          break;
+        }
+      }
+      if ( dno ) {
+        f = (float) i * DM_IN_CNT_120 * (ctrl.sonar.speed + 1); // 120 точек 4.872м на скорости 0
+        //f = i;
+        if (f>255) f=255;
+        return f;
+      }
+    }
+  }
+  return 255;
+}
+
 void sonar_update_buf120() { // отобрать нужное окно из 120 замеров
   uint16_t start = (float) CNT_ON_1M_FROM_1480 * ctrl.sonar.delta; // с какого отсчета начинается окно
   uint16_t idx=0, n, step, sr, mx, i;
@@ -95,6 +121,14 @@ void sonar_update_buf120() { // отобрать нужное окно из 120 
   }   
 }
 
+void clear2treshold120(){ // затереть все что ниже трешолда в 120 буфере
+  uint16_t i, tr;
+  tr = ctrl.sonar.treshold * TRESHOLD_MULTI;
+  for (i=1; i<BUF120_LEN; i++) {
+    if ( buf120[i] <= tr) buf120[i] = 0;
+  }
+}
+
 void  sonar_pack_data(){
   uint16_t idx=0, i, tr;
 /*  
@@ -105,12 +139,10 @@ void  sonar_pack_data(){
   }
   tlm.tok = mn;
 */
-  uint32_t t = micros();
   // затираем все до уровня порога
-  tr = ctrl.sonar.treshold * TRESHOLD_MULTI;
-  for (i=1; i<BUF120_LEN; i++) {
-    if ( buf120[i] <= tr) buf120[i] = 0;
-  }
+  clear2treshold120();
+
+  tlm.sonar.deep = deep120();
 
   uint8_t b1, b2;
   for (i=1; i<BUF120_LEN; i+=2) {
@@ -119,7 +151,6 @@ void  sonar_pack_data(){
     b2 = buf120[i] >> 8;
     tlm.sonar.map[idx++] = ((b1) << 4) + (b2);
   }
-  tlm.tok = micros()-t; // 45 mks
 }
 
 void sonar_update(){

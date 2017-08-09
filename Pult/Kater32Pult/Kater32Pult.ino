@@ -22,10 +22,11 @@ void send_paket();
 void init_vars();
 
 void setup() {
-
+  
   screen_setup();
   
   HC12.begin(38400);
+  HC12.println("CarpWinner");
   DBG.begin(115200);
   Pult.begin(details(ctrl), &HC12);
   Kater.begin(details(tlm), &HC12);

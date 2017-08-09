@@ -1,5 +1,21 @@
-#define TFT_DC PB1
-#define TFT_CS PB0
+#define REMAP_SPI1
+
+//#define TFT_DC PB1
+//#define TFT_CS PB0
+
+#ifdef REMAP_SPI1
+  #define TFT_DC PA12
+  #define TFT_CS PA15
+  #define RUL_PIN PB0
+  #define GAZ_PIN PA7
+  
+#else
+  #define TFT_DC PB1
+  #define TFT_CS PB0
+  #define RUL_PIN PA0
+  #define GAZ_PIN PA1
+#endif
+
 
 stControl ctrl; // управление с пульта
 stTelemetry tlm, old; // телеметрия с катера
@@ -17,8 +33,6 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 uint8_t point_idx=0; // номер текущей точки
 stPoint points[POINT_NUM]; // массив точек
 
-#define RUL_PIN PA0
-#define GAZ_PIN PA1
 
 uint16_t adc_rul, adc_gaz;
 

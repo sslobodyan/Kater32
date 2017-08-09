@@ -9,7 +9,7 @@ EasyTransfer Kater;
 #include "workers.h"
 #include "sonar.h"
 
-#define HC12 Serial2
+#define HC12 Serial2 // a2
 #define DBG Serial1 // a9
 
 uint32_t tm;
@@ -87,7 +87,7 @@ void test_data() {
   tlm.gps.sat.cnt = 15;
   tlm.gps.sat.fix = 1;
   tlm.gps.sat.second += 1;
-  ctrl.sonar.treshold = 200;
+  ctrl.sonar.treshold = 2;
 }
 
 void loop() {
@@ -107,9 +107,12 @@ void loop() {
 
   if ( sonar_newdata  ) {   
     sonar_newdata=false;
+    
+    uint32_t t = micros();
     sonar_update();
+    tlm.tok = micros()-t; // 165 mks
+
     attachInterrupt(SONAR_INT_PIN, ExternSonarInt, FALLING); // разрешим запрос эха
-    //LED_TOGGLE;
   }
 
   
