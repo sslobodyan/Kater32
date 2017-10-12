@@ -38,6 +38,8 @@ uint8_t point_idx=0; // номер текущей точки
 
 #define BUF_CNT WSONAR
 uint8_t buf[BUF_CNT][60]; // карта эхолота
+bool menu_sonar = true; // показывать в меню настройки сонара и калибровки
+bool is_left;
 
 uint32_t tm, tm_loop, tm_bunker, tm_auto;
 
@@ -54,7 +56,8 @@ bool is_menu = false; // перешли в режим меню и джойсти
 bool refresh_menu=false;
 byte id_menu=0;
 
-void update_menu_screen();
+void update_menu_screen_sonar();
+void update_menu_screen_kalibr();
 void show_menu1();
 void open_bunker();
 bool is_point_fill( stPoint point );
@@ -82,14 +85,16 @@ struct stFlash { // надо выровнять на 2 байта == 88 байт
   //3
   uint8_t sonar_treshold; 
   int8_t trim_rul; 
-
-  //4-44 по 4
+  //4-43 по 4
   stPoint points[POINT_NUM]; // точки для автопилота 10 * 8 = 80 байт 
-  //45 = 2D
+  //44 
+  uint8_t pid;
+  uint8_t rezerv;
 } flash;
 
 #define EEPROM_CNT 1
 #define EEPROM_DELTA_SPEED 2
 #define EEPROM_TRESHOLD_TRIM 3
 #define EEPROM_POINT0 4
+#define EEPROM_PID 44
 

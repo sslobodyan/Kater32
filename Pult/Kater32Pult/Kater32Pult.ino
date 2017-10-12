@@ -52,6 +52,10 @@ void setup() {
   tm, tm_loop = millis();  
 
   init_vars();
+  button = digitalRead( PIN_KEY );
+  if ( !button ) { // при включении нажата кнопка - в менб вместо сонара показывать настройки
+    menu_sonar = false;  
+  }
   update_screen(true); // refresh statik
   screen_hello();
 }

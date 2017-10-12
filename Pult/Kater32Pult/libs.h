@@ -17,6 +17,7 @@ void send_paket() {
   //DBG.print(" sat ");DBG.print(tlm.gps.sat.cnt);
   //DBG.print(" rul ");DBG.print(ctrl.rul);DBG.print(" gaz ");DBG.println(ctrl.gaz);
   ctrl.trim = flash.trim_rul;
+  ctrl.pid = flash.pid;
   Pult.sendData();
 }
 

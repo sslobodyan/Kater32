@@ -109,7 +109,7 @@ uint8_t deep120() { // глубина по 120 буферу без учета д
         tlm.sonar.level = level >> 4; // уровень сигнала на дне приводим к байту
         //f = i;
         if (f>255) f=0;
-          DBG.print("Deep=");DBG.println(f);
+          //DBG.print("Deep=");DBG.println(f);
         return f;
       }
     }

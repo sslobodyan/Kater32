@@ -76,6 +76,7 @@ void init_flash(void) {
   flash.carp = 'C';
   flash.winner = 'W';
   flash.cnt = 0;
+  flash.pid = 20;
   save_to_eprom();
 }
 

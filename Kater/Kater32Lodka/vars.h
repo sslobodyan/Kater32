@@ -28,7 +28,9 @@ int8_t corr_autopilote=0; // коррекция автопилота для ру
 uint16_t sum_base_heading = 0;
 int8_t cnt_base_heading = CNT_HEADING_SAMPLES;
 
-float pid_kp=1, pid_ki=2;
+float pid_kp, pid_ki;
+#define PID_KP 1.0
+#define PID_KI 2.0
 
 stPoint home_pnt;
 

@@ -5,7 +5,7 @@
 #define HEIGHTLINEMENU 26
 
 enum e_menu1 {
-  mPoint, mLight, mSonarWind, mSonarTresh, mTrap, mSave, mGo, mClear, mSonarSpeed, mTrim
+  mPoint, mLight, mSonarWind, mSonarTresh, mTrap, mSave, mGo, mClear, mPid, mSonarSpeed, mTrim
 };
 
 struct stMenu {
@@ -13,12 +13,11 @@ struct stMenu {
   char title[20];
 };
 
-#define CNT_MENU 9
-stMenu menu[CNT_MENU] = {
+#define CNT_MENU 8
+stMenu menu_for_sonar[CNT_MENU] = {
   {mPoint, "Точка"},
   {mGo, "Идти"},
   {mClear, "Очистить"},
-  {mTrim, "Руль"},
   {mLight, "Свет"},
   {mSonarWind, "Верх с"},
   {mSonarTresh, "Помехи"},
@@ -26,14 +25,14 @@ stMenu menu[CNT_MENU] = {
   {mTrap, "Сброс"},
 };
 
-void show_menu1() {
+void show_menu_sonar() {
   tft.setTextSize(3);
   for(byte i=0; i<CNT_MENU; i++) {
     if ( i == id_menu ) tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE); 
     else tft.setTextColor(ILI9341_YELLOW); 
     tft.setCursor( XMENU+4, YMENU+2+HEIGHTLINEMENU*i );
-    tft.print( utf8rus( menu[ i ].title ) );  
-    switch ( menu[ i ].id ) {
+    tft.print( utf8rus( menu_for_sonar[ i ].title ) );  
+    switch ( menu_for_sonar[ i ].id ) {
       case mPoint: 
           tft.print(" "); tft.print( point_idx ); tft.print(" ");
           break;
@@ -42,9 +41,6 @@ void show_menu1() {
           break;
       case mSonarWind:
           tft.print(" "); tft.print( ctrl.sonar.delta ); tft.print(" ");
-          break;
-      case mTrim:
-          tft.print(" "); tft.print( ctrl.trim ); tft.print(" ");
           break;
       case mSonarSpeed:
           if ( ctrl.sonar.speed ) {  
@@ -60,9 +56,39 @@ void show_menu1() {
   }
 }
 
-void update_menu_screen() {
+#define CNT_MENU_KALIBR 5
+stMenu menu_for_kalibr[CNT_MENU_KALIBR] = {
+  {mPoint, "Точка"},
+  {mGo, "Идти"},
+  {mClear, "Очистить"},
+  {mTrim, "Руль"},
+  {mPid, "PID"}
+};
+
+void show_menu_kalibr() {
+  tft.setTextSize(3);
+  for(byte i=0; i<CNT_MENU_KALIBR; i++) {
+    if ( i == id_menu ) tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE); 
+    else tft.setTextColor(ILI9341_YELLOW); 
+    tft.setCursor( XMENU+4, YMENU+2+HEIGHTLINEMENU*i );
+    tft.print( utf8rus( menu_for_kalibr[ i ].title ) );  
+    switch ( menu_for_kalibr[ i ].id ) {
+      case mPoint: 
+          tft.print(" "); tft.print( point_idx ); tft.print(" ");
+          break;
+      case mTrim:
+          tft.print(" "); tft.print( ctrl.trim ); tft.print(" ");
+          break;
+      case mPid:
+          tft.print(" "); tft.print( ctrl.pid ); tft.print(" ");
+          break;
+    }
+  }
+}
+
+void update_menu_screen_sonar() {
   if ( !refresh_menu ) {
-    show_menu1();
+    show_menu_sonar();
     return;
   }
   refresh_menu = false;
@@ -73,7 +99,22 @@ void update_menu_screen() {
     delayMicroseconds(200);
   }
   tft.drawRect(XMENU-1, YMENU-1, WIDTHMENU+2, HEIGHTMENU+2, ILI9341_WHITE);
-  show_menu1();
+  show_menu_sonar();
   //tft.setCursor( XMENU+110, YMENU+2 ); tft.print(adc_gaz); tft.print(" "); tft.print(adc_rul); tft.print(" ");
+}
+
+void update_menu_screen_kalibr() {
+  if ( !refresh_menu ) {
+    show_menu_kalibr();
+    return;
+  }
+  refresh_menu = false;
+  
+  for(uint16_t i=XMENU; i<WIDTHMENU+XMENU; i++) {
+    tft.drawFastVLine(i, YMENU, HEIGHTMENU, ILI9341_BLUE);
+    delayMicroseconds(200);
+  }
+  tft.drawRect(XMENU-1, YMENU-1, WIDTHMENU+2, HEIGHTMENU+2, ILI9341_WHITE);
+  show_menu_kalibr();
 }
 

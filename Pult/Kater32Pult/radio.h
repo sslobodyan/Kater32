@@ -43,10 +43,11 @@ struct stGps { // 12
 
 
 ////////////////////////// передается на катер //////////////////
-struct stControl { // 22
+struct stControl { // 23
   int8_t rul;
   int8_t gaz;
   int8_t trim;
+  uint8_t pid;
   stLight light; //1 
   stSonarControl sonar; //2
   stPoint point; // 8

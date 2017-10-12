@@ -21,17 +21,14 @@ void save_with_status(){
   tft.print(status, HEX);
 }
 
-void update_rul() { // не в центре
-    bool is_left = (adc_rul > CENTER_JOY+DELTA_JOY);
-    if ( center_rul ) {
-      center_rul = false;
-      switch( menu[id_menu].id ) {
-        case mPoint: 
+void do_command_menu_sonar(){
+        switch( menu_for_sonar[id_menu].id ) {
+          case mPoint: 
             if ( is_left ) { if (point_idx) point_idx--; }
             else { if (point_idx < POINT_NUM-1 ) point_idx++; }
             break;
             
-         case mSonarWind:
+          case mSonarWind:
             if ( is_left ) { 
               if (ctrl.sonar.delta) {
                 ctrl.sonar.delta--; 
@@ -108,20 +105,96 @@ void update_rul() { // не в центре
             save_to_eprom( EEPROM_DELTA_SPEED );
             break;
 
-        default: ;
+          default: ;
       }
+}
+
+void do_command_menu_kalibr(){
+        switch( menu_for_kalibr[id_menu].id ) {
+          case mPoint: 
+            if ( is_left ) { if (point_idx) point_idx--; }
+            else { if (point_idx < POINT_NUM-1 ) point_idx++; }
+            break;
+                     
+          case mTrim:
+            if ( is_left ) {
+              if (flash.trim_rul > -50) {
+                flash.trim_rul--;
+                save_to_eprom( EEPROM_TRESHOLD_TRIM );
+              }
+            }
+            else {
+              if (flash.trim_rul < 50) {
+                flash.trim_rul++;
+                save_to_eprom( EEPROM_TRESHOLD_TRIM );
+              }
+            }
+            break;
+
+          case mPid:
+            if ( is_left ) {
+              if (flash.pid > 1) {
+                flash.pid --;
+                save_to_eprom( EEPROM_PID );
+              }
+            }
+            else {
+              if (flash.pid < 250) {
+                flash.pid++;
+                save_to_eprom( EEPROM_PID );
+              }
+            }
+            break;
+
+          case mTrap:
+            if ( !is_left ) {
+              open_bunker();
+              is_menu = false;
+            }
+            break;
+            
+          case mClear:
+            if ( ! is_left ) {
+              flash.points[point_idx].lat = BAD_POINT;
+              flash.points[point_idx].lon = BAD_POINT;
+              save_to_eprom( EEPROM_POINT0 + point_idx );
+              update_point();
+              old_point_idx = 99;
+            }
+            break;
+            
+          case mGo:
+            if ( !is_left ) {
+              autopilot_on();
+              is_menu = false;
+            }
+            break;
+            
+          default: ;
+      }
+}
+
+
+void update_rul() { // не в центре
+    is_left = (adc_rul > CENTER_JOY+DELTA_JOY);
+    if ( center_rul ) {
+      center_rul = false;
+      if (menu_sonar) do_command_menu_sonar();
+      else do_command_menu_kalibr();
     }  
 }
 
 void update_gaz() { // не в центре
+    byte cnt_menu = menu_sonar ? CNT_MENU : CNT_MENU_KALIBR;
+    
     if ( center_gaz ) {
       center_gaz = false;
       if ( adc_gaz < CENTER_JOY-DELTA_JOY ) {
         if (id_menu) {
           id_menu--;
-        } else id_menu=CNT_MENU-1;
+        } else id_menu = cnt_menu-1;
       } else {
-        if (id_menu < CNT_MENU-1) {
+        if (id_menu < cnt_menu-1) {
           id_menu++;
         } else id_menu=0;
       }

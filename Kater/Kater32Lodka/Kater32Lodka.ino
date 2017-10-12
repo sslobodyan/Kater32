@@ -70,7 +70,6 @@ void setup() {
   DBG.println(F("CarpWinner 32 RX"));
   DBG.flush();
 
-  init_pid();
   setup_workers();
 
   tlm.kurs = 255;

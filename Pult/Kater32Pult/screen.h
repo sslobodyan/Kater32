@@ -115,7 +115,10 @@ void update_main_screen(bool refresh=false) {
   if (old.tok != tlm.tok) update_tok();
   if (old.kurs != tlm.kurs) update_kurs();
   
-  if (is_menu) update_menu_screen(); 
+  if (is_menu) {
+    if (menu_sonar) update_menu_screen_sonar(); 
+    else update_menu_screen_kalibr(); 
+  }
   else {
     if (old.sonar.cnt != tlm.sonar.cnt) update_sonar_data();   
   }

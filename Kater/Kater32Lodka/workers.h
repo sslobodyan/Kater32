@@ -47,8 +47,9 @@ void update_servo() {
   d -= ctrl.trim;
   if (d > 127) d = 127;
   if (d < -126) d = -126;
+  //DBG.print("rul="); DBG.print(rul); DBG.print(" d="); DBG.println(d);
+
   d = map( d, -127, 128, 700, 2200 );
-  DBG.print("rul="); DBG.print(rul); DBG.print(" d="); DBG.println(d);
   if ( Timer3.getCompare2() != d ) Timer3.setCompare2(d);
   
   d = map( bunker, 0, 1, 700, 2200 );
