@@ -126,11 +126,15 @@ bool processGPS() {
   static unsigned char class_id[2]; // храним класс и ид входящего пакета
   static unsigned char crc[2]; // храним CRC входящего пакета
 
-  while( DBG.available() ) UBLOX.write( DBG.read() );
+  #ifdef USE_DEBUG_UBLOX
+    while( DBG.available() ) UBLOX.write( DBG.read() );
+  #endif
   
   while ( UBLOX.available() ) {
     byte c = UBLOX.read();
-    DBG.write( c );
+    #ifdef USE_DEBUG_UBLOX
+      DBG.write( c );
+    #endif  
     //DBG.println(c,HEX);
     if ( fpos < 2 ) {
       if ( c == UBX_HEADER[fpos] ) {
@@ -211,7 +215,10 @@ bool processGPS() {
 
 void update_gps() {
       if ( processGPS() ) {
-        tlm.gps.sat.present = true;
+        if ( !tlm.gps.sat.present ) {
+          DBG.println("GPS found!");
+          tlm.gps.sat.present = true;
+        }
         tm_gps = millis() + 3000;
       }
       if (posllh.valid ) {
@@ -228,19 +235,26 @@ void update_gps() {
         nav_sol.valid = 0;
       }
       if (velned.valid ) {
-          tlm.gps.sat.speed = velned.gSpeed;          
-          uint8_t kurs = velned.heading / 100000 / 2;
-          if ( velned.gSpeed > 100 ) { // поехали со скоростью более метра в секунду
-            if ( cnt_base_heading > 0 ) { 
-              sum_base_heading += kurs;
-              cnt_base_heading--;
-            } else if (cnt_base_heading == 0) {
-              base_heading = sum_base_heading / CNT_HEADING_SAMPLES;  // запоминаем усредненный курс первой поездки как базовый
-              cnt_base_heading--;
-            } else {
-              tlm.kurs = velned.heading / 100000 / 2 - base_heading;    
-            }
+        tlm.gps.sat.speed = velned.gSpeed / 10;          
+        kurs_gps = velned.heading / 100000;      
+        int kurs = (int) kurs_gps / 2;
+        if ( velned.gSpeed > 100 ) { // поехали со скоростью более 1 метра в секунду
+          if ( cnt_base_heading > 0 ) { 
+            sum_base_heading += kurs;
+            cnt_base_heading--;
+          } else if (cnt_base_heading == 0) {
+            base_heading = sum_base_heading / CNT_HEADING_SAMPLES;  // запоминаем усредненный курс первой поездки как базовый
+            cnt_base_heading--;
           }
+        }
+        if (cnt_base_heading < 0) {
+          int kurs_tmp = kurs - base_heading;    // TODO пока весь курс берем с ГПС
+          while (kurs_tmp > 180) kurs_tmp-=180;
+          while (kurs_tmp < 0) kurs_tmp+=180;
+          tlm.kurs = kurs_tmp;          
+        } else {
+          tlm.kurs = 250;          
+        }
         velned.valid = 0;
       }
       if (navdop.valid ) {

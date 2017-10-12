@@ -67,7 +67,7 @@ void update_sensors() {
   u = (float) MX_U * tmp + 0.5f;
   u = old_u*0.5 + u*0.5;
   old_u = u;
-  DBG.print("U=");DBG.println(old_u);
+  //DBG.print("U=");DBG.println(old_u);
 
   tmp = ADC2->regs->JDR2;    //прочитать результат первого преобразования (в нашем случае канал 0)     /
   old_i = tmp*0.1 + old_i*0.9;

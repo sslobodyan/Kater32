@@ -32,17 +32,17 @@ void test_sonar() {
     tlm.sonar.map[i/2] = (buf[i] << 4) + buf[i+1];
   }
   
-  tlm.sonar.cnt += 1; 
+  //tlm.sonar.cnt += 1; 
 }
 
 void test_data() {
   //tlm.kurs += 1;
-  tlm.bort += 1;
+  //tlm.bort += 1;
   //tlm.gps.sat.speed += 1;
   //tlm.gps.sat.cnt = 15;
   //tlm.gps.sat.fix = 1;
   //tlm.gps.sat.second += 1;
-  ctrl.sonar.treshold = 2;
+  //ctrl.sonar.treshold = 2;
 }
 
 

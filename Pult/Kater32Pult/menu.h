@@ -1,11 +1,11 @@
 #define XMENU XSONAR+1
-#define YMENU 30
+#define YMENU 1
 #define WIDTHMENU WSONAR-2
-#define HEIGHTMENU 184
+#define HEIGHTMENU 238
 #define HEIGHTLINEMENU 26
 
 enum e_menu1 {
-  mPoint, mLight, mSonarWind, mSonarTresh, mTrap, mSave, mGo, mClear
+  mPoint, mLight, mSonarWind, mSonarTresh, mTrap, mSave, mGo, mClear, mSonarSpeed, mTrim
 };
 
 struct stMenu {
@@ -13,14 +13,16 @@ struct stMenu {
   char title[20];
 };
 
-#define CNT_MENU 7
+#define CNT_MENU 9
 stMenu menu[CNT_MENU] = {
   {mPoint, "Точка"},
   {mGo, "Идти"},
   {mClear, "Очистить"},
+  {mTrim, "Руль"},
   {mLight, "Свет"},
-  {mSonarWind, "Окно"},
-  {mSonarTresh, "Порог"},
+  {mSonarWind, "Верх с"},
+  {mSonarTresh, "Помехи"},
+  {mSonarSpeed, "Высота"},
   {mTrap, "Сброс"},
 };
 
@@ -39,9 +41,17 @@ void show_menu1() {
           tft.print(" "); tft.print( ctrl.light.light );
           break;
       case mSonarWind:
-          if ( ctrl.sonar.delta ) {
-            tft.print(" "); tft.print( ctrl.sonar.delta ); tft.print(" ");
-          } else tft.print("  ");
+          tft.print(" "); tft.print( ctrl.sonar.delta ); tft.print(" ");
+          break;
+      case mTrim:
+          tft.print(" "); tft.print( ctrl.trim ); tft.print(" ");
+          break;
+      case mSonarSpeed:
+          if ( ctrl.sonar.speed ) {  
+            tft.print( " 9m" ); //tft.print(" ");
+          } else {
+            tft.print( " 5m" ); //tft.print(" ");
+          }
           break;
       case mSonarTresh: 
           tft.print(" "); tft.print( ctrl.sonar.treshold ); tft.print(" ");

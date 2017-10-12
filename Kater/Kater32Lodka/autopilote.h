@@ -21,11 +21,15 @@ void autopilote_off() {
   pnt.lat = BAD_POINT;
   pnt.lon = BAD_POINT;
   set_destination( pnt );
+  DBG.println(F("autopilote_off()"));
 }
 
 bool is_in_auto() {
-  if ( (dest_lat != BAD_GRD) && (dest_lon != BAD_GRD ) ) return true;
-  else return false;
+  bool ret = false;
+  if ( (dest_lat != BAD_GRD) && (dest_lon != BAD_GRD ) ) {
+    ret = true;
+  }
+  return ret;
 }
 
 int8_t pid_corr(float est, float nado) {
@@ -47,18 +51,36 @@ int8_t pid_corr(float est, float nado) {
 }
 
 void init_pid() {
+  autopilote_off();
   float a = analogRead(PIN_PID);
   pid_kp *= a/2048;
   pid_ki *= a/2048;
 }
 
-void update_autopilote() {
+bool update_autopilote() {
+  if (rul > 30 || rul < -30) { // подергали рулем
+    corr_autopilote = 0;
+    return false;    
+  }
+  if (gaz > 30 || gaz < -30) { // подергали газом
+    corr_autopilote = 0;
+    return false;    
+  }
   if ( is_in_auto() ) {
     float lat = posllh.lat / INT2FLOAT_MUX;
     float lon = posllh.lon / INT2FLOAT_MUX;
     
     float heading = GetHeading( lat, lon, dest_lat, dest_lon );
     corr_autopilote = pid_corr(kurs_gps, heading);
-  } else corr_autopilote = 0;
+
+    float to_point = GetDistanceInM( lat, lon, dest_lat, dest_lon );
+    if (to_point < 2.0) {
+      autopilote_off();
+      return false;
+    } else return true;
+  } else {
+    corr_autopilote = 0;
+    return false;
+  }
 }
 

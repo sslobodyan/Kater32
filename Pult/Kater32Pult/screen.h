@@ -1,3 +1,5 @@
+#include "logo.h"
+
 void update_screen(bool refresh);
 void update_main_screen(bool refresh);
 void update_bort();
@@ -12,17 +14,14 @@ void update_sonar_data();
 void drawHeading(uint8_t compas, uint16_t color);
 void update_sat();
 void update_sat_speed();
+void update_gps_present();
+void update_test(uint16_t data);
 
 #define XUBORT 10
 #define YUBORT 4
 
 #define XIBORT 10
 #define YIBORT 22
-
-#define XSONAR 90
-#define WSONAR 194
-#define YSONAR 0
-#define HSONAR 240
 
 #define XDEEP 120
 #define YDEEP 10
@@ -36,14 +35,15 @@ void update_sat_speed();
 #define XSPEED 6
 #define YSPEED 220
 
-#define BUF_CNT WSONAR
+#define XTEST 0
+#define YTEST 200
+
 
 #define TWIDTH 3 // ширина трешолда
 
 #define XVECTOR  40
 #define YVECTOR  80
 
-uint8_t buf[BUF_CNT][60]; // карта эхолота
 bool cnt_radio;
 
 struct stVector {
@@ -83,6 +83,8 @@ void screen_setup(){
   gpio_set_mode(GPIOB, 4, GPIO_INPUT_FLOATING);
   gpio_set_mode(GPIOB, 5, GPIO_AF_OUTPUT_PP);
   
+  gpio_set_mode(GPIOA, 7, GPIO_INPUT_ANALOG);
+  
 #endif
   
   tft.begin(); 
@@ -90,6 +92,7 @@ void screen_setup(){
   tft.setTextColor(ILI9341_YELLOW); 
   tft.setTextSize(2);
   tft.setRotation(3);
+  tft.cp437(true);
   //tft.println( sizeof(ctrl) ); tft.println( sizeof(tlm) ); delay(200);
 
 }
@@ -104,16 +107,25 @@ void update_main_screen(bool refresh=false) {
   else tft.fillRect(XVECTOR-36, YVECTOR-36, 8, 8, ILI9341_BLACK);
   cnt_radio = !cnt_radio;
   
-  if (refresh) refresh_static();
+  if (refresh) {
+    refresh_static();
+    update_gps_present();
+  }
   if (old.bort != tlm.bort) update_bort();
   if (old.tok != tlm.tok) update_tok();
   if (old.kurs != tlm.kurs) update_kurs();
-  if (old.sonar.cnt != tlm.sonar.cnt) update_sonar_data(); 
+  
+  if (is_menu) update_menu_screen(); 
+  else {
+    if (old.sonar.cnt != tlm.sonar.cnt) update_sonar_data();   
+  }
+  
   if (old.sonar.delta != tlm.sonar.delta) update_lineika(); 
   if (old.sonar.speed != tlm.sonar.speed) update_lineika(); 
   if (old.sonar.treshold != tlm.sonar.treshold) update_treshold(); 
+  if (old.gps.sat.present != tlm.gps.sat.present) update_gps_present();
 
-  update_point();  
+  if (old_point_idx != point_idx) update_point();  
   
   if (old.gps.sat.cnt != tlm.gps.sat.cnt) update_sat();  
   if (old.gps.sat.speed != tlm.gps.sat.speed) update_sat_speed();
@@ -161,6 +173,7 @@ void update_treshold() {
 void refresh_static(){
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextColor(ILI9341_YELLOW, ILI9341_BLACK); 
+  tft.setTextSize(2);
   tft.setCursor( XUBORT+54, YUBORT );
   tft.print("v");
   tft.setCursor( XIBORT+54, YIBORT );
@@ -172,14 +185,14 @@ void refresh_static(){
   tft.drawFastHLine(0, YVECTOR-40,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
   tft.drawFastHLine(0, YVECTOR+40,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
 
-  tft.setCursor(XSAT-14, YSAT);
-  tft.print("@");
   tft.drawFastHLine(0, YSAT-4,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
   tft.drawFastHLine(0, YSAT+18,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
 
-  tft.setCursor(XSPEED+40, YSPEED);
-  tft.print("m/s");
   tft.drawFastHLine(0, YSPEED-4,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
+}
+
+void update_gps() {
+  
 }
 
 void update_bort(){
@@ -218,28 +231,44 @@ void update_kurs(){
   comp = kurs2compass( tlm.kurs );
   if ( old_comp != comp ) {
     drawHeading( old_comp , ILI9341_BLACK);
-    drawHeading( comp , ILI9341_WHITE);
+    if (tlm.kurs < 181) drawHeading( comp , ILI9341_WHITE);
     old.kurs = tlm.kurs;    
   }
 }
 
-void update_gps(){
-  
-}
-
-bool is_point_fill( stPoint point ) {
-  bool res = true;
-  if ( point.lat == 0 ) res = false; 
-  if ( point.lon == 0 ) res = false;
-  return res;
+void update_gps_present(){
+  old.gps.sat.present = tlm.gps.sat.present;
+  tft.setTextSize(2);
+  if (old.gps.sat.present) {
+    //tft.setCursor(XSAT-14, YSAT);
+    //tft.print("@");    
+    tft.setCursor(XSPEED+40, YSPEED);
+    tft.print("m/s");
+  } else {
+    tft.setCursor(XSAT-14, YSAT);
+    tft.print("      ");        
+    tft.setCursor(XSPEED, YSPEED);
+    tft.print("      ");
+  }
 }
 
 void update_point(){
+  old_point_idx = point_idx;
   tft.setCursor(XPOINT, YPOINT);
   tft.setTextSize(4);
-  if ( ! is_point_fill( points[point_idx] ) ) tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
-  else tft.setTextColor(ILI9341_BLACK,ILI9341_WHITE);
-  tft.print( point_idx );
+  if ( ! is_point_fill( flash.points[point_idx] ) ) {
+    tft.fillRect(0, YPOINT-3, XSONAR-6, 35, ILI9341_BLACK  );
+    tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
+    tft.print( point_idx );
+    tft.print( " " );
+  }
+  else {
+    tft.fillRect(0, YPOINT-3, XSONAR-6, 35, ILI9341_WHITE  );
+    tft.setTextColor(ILI9341_BLACK,ILI9341_WHITE);
+    tft.print( point_idx );
+    tft.print( "*" );
+  }
+  
 }
 
 struct stLimit {
@@ -383,23 +412,73 @@ void drawHeading(uint8_t compas, uint16_t color) {
 }
 
 void update_sat(){
-  tft.setCursor(XSAT, YSAT);
-  tft.setTextSize(2);
-  tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
-  if (tlm.gps.sat.cnt<10) tft.print(" ");
-  tft.print(tlm.gps.sat.cnt);
-  if (tlm.gps.sat.fix) tft.print(" 3d");
-  else  tft.print(" --");
-  old.gps.sat.cnt = tlm.gps.sat.cnt;  
+  if (tlm.gps.sat.present) {
+    tft.setCursor(XSAT, YSAT);
+    tft.setTextSize(2);
+    tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
+    if (tlm.gps.sat.cnt<10) tft.print(" ");
+    tft.print(tlm.gps.sat.cnt);
+    if (tlm.gps.sat.fix) tft.print(" 3D");
+    else  tft.print(" --");
+    old.gps.sat.cnt = tlm.gps.sat.cnt;      
+  }
 }
 
 void update_sat_speed(){
-  tft.setCursor(XSPEED, YSPEED);
-  tft.setTextSize(2);
-  tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
-  float f = (float) tlm.gps.sat.speed / 10;
-  if (f<10) tft.print(f,1);
-  else tft.print("---");
-  old.gps.sat.speed = tlm.gps.sat.speed;    
+  if (tlm.gps.sat.present) {
+    tft.setCursor(XSPEED, YSPEED);
+    tft.setTextSize(2);
+    tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
+    float f = (float) tlm.gps.sat.speed / 10;
+    if (f<10) tft.print(f,1);
+    else tft.print("---");
+    old.gps.sat.speed = tlm.gps.sat.speed;    
+  }
+}
+
+void update_test(uint16_t data){
+    tft.setCursor(XTEST, YTEST);
+    tft.setTextSize(2);
+    tft.setTextColor(ILI9341_RED,ILI9341_BLACK);
+    tft.print(data);  
+    tft.setTextColor(ILI9341_GREEN,ILI9341_BLACK);
+    tft.print(tlm.rezerv);  
+    tft.print(" ");
+
+    tft.setCursor(XTEST, YTEST-15);
+    tft.setTextSize(2);
+    tft.setTextColor(ILI9341_YELLOW,ILI9341_BLACK);
+    tft.print(button_cnt);  
+    tft.print(" ");
+
+}
+
+void screen_hello(void) {
+  byte static cnt;
+  
+  #define P_HEIGHT 190
+  #define P_WIDTH 192  
+  #define P_WIDTH_DIV_8 P_WIDTH/8
+  #define X_LOGO XSONAR+1
+  #define Y_LOGO 5
+  
+    for (byte m=0; m<P_HEIGHT; m++) { 
+      for (byte k=0; k<P_WIDTH_DIV_8; k++) { // ==160/8
+        byte c = image_data_logo[m*P_WIDTH_DIV_8+k];
+        for (byte i=0; i<8; i++) {
+          if ( c & 0b10000000 ) tft.drawPixel(X_LOGO+k*8+i, m+Y_LOGO, ILI9341_YELLOW);
+          //else tft.drawPixel(X_LOGO+k*8+i, m+Y_LOGO, ILI9341_BLUE);
+          c = c << 1;
+        }
+      }
+    }
+
+    tft.setTextColor(ILI9341_WHITE);
+    tft.setTextSize(2);
+    tft.setCursor(X_LOGO+10, Y_LOGO + P_HEIGHT + 5);
+    tft.print(__DATE__);
+    tft.setCursor(X_LOGO+10, Y_LOGO + P_HEIGHT + 23);
+    tft.println(__TIME__);  
+    delay(200);
 }
 
