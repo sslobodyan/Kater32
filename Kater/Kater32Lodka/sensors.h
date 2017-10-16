@@ -33,31 +33,34 @@ void set_ADC2_injected(){
 }
 
 void init_sensors() {
+#define SENSORS_SUM_CNT  50
   int tmp;
+  uint32_t sum_i=0, sum_u=0;
   old_i = 0;
   old_u = 0;
   pinMode(PIN_I, INPUT_ANALOG);
   pinMode(PIN_U, INPUT_ANALOG);
   // настраиваем чтение по АЦП2 инжектированной группой
   set_ADC2_injected();
+  delay(50);
 
   // измеряем значения каналов на холостом ходу
-  for (int i=0; i<100; i++) {
+  //DBG.println("Calc base sensors");
+  for (int i=0; i<SENSORS_SUM_CNT; i++) {
     
     tmp = ADC2->regs->JDR1;    //прочитать результат первого преобразования (в нашем случае канал 0)     /
-    old_u += tmp; 
+    sum_u += tmp; 
     
     tmp = ADC2->regs->JDR2;    //прочитать результат второго преобразования (в нашем случае канал 1)
-    old_i += tmp; // на старте меряем напряжение токового датчика и берем его за 0  
-    
-    delay(10);
+    sum_i += tmp; // на старте меряем напряжение токового датчика и берем его за 0  
+    //DBG.println(tmp);
+    //delay(20);
   }
-  base_i = old_i / 100;
+  base_i = (uint32_t) sum_i / SENSORS_SUM_CNT;
   old_i = base_i;
-  old_u = old_u / 100;
+  old_u = (uint32_t) sum_u / SENSORS_SUM_CNT;
   old_u = (float) MX_U * old_u;
-  DBG.print(F("base_i ")); DBG.println(base_i);
-  DBG.print(F("U ")); DBG.print( ADC2->regs->JDR1 ); DBG.print("="); DBG.print(old_u); DBG.print(" MX_U="); DBG.println(MX_U);
+  //DBG.print(F("base_i ")); DBG.println(base_i); DBG.print(F("U ")); DBG.print( ADC2->regs->JDR1 ); DBG.print("="); DBG.print(old_u); DBG.print(" MX_U="); DBG.println(MX_U);
 }
 
 void update_sensors() {
@@ -70,12 +73,12 @@ void update_sensors() {
   //DBG.print("U=");DBG.println(old_u);
 
   tmp = ADC2->regs->JDR2;    //прочитать результат первого преобразования (в нашем случае канал 0)     /
-  old_i = tmp*0.1 + old_i*0.9;
-  //DBG.print("i=");DBG.println(old_i);
-  i = (float) MX_I * ( old_i - base_i);
-  if (i<0) i=0;
+  old_i = tmp*0.4 + old_i*0.6;
+  i = (float) MX_I * abs( base_i - old_i );
   
   tlm.bort = u;
   tlm.tok = i;    
+
+  //DBG.print("Tmp=");DBG.print(tmp);DBG.print(" Old_i=");DBG.print(old_i);DBG.print(" I=");DBG.print(i); DBG.print(" Tok=");DBG.println( tlm.tok );
 }
 

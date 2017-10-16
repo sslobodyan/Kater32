@@ -6,6 +6,8 @@
 uint32_t tm_button;
 bool button, old_button, center_rul, center_gaz;
 
+bool rul_on_center();
+
 void setup_keys() {
   pinMode( PIN_KEY, INPUT_PULLUP);
   button = digitalRead( PIN_KEY );
@@ -76,7 +78,9 @@ void do_command_menu_sonar(){
           case mTrap:
             if ( !is_left ) {
               open_bunker();
+              update_point();
               is_menu = false;
+              while ( !rul_on_center() ) ; delay(20);
             }
             break;
             
@@ -87,6 +91,7 @@ void do_command_menu_sonar(){
               save_to_eprom( EEPROM_POINT0 + point_idx );
               update_point();
               old_point_idx = 99;
+              while ( !rul_on_center() ) ; delay(20);
             }
             break;
             
@@ -94,6 +99,7 @@ void do_command_menu_sonar(){
             if ( !is_left ) {
               autopilot_on();
               is_menu = false;
+              while ( !rul_on_center() ) ; delay(20);
             }
             break;
             
@@ -150,6 +156,7 @@ void do_command_menu_kalibr(){
             if ( !is_left ) {
               open_bunker();
               is_menu = false;
+              while ( !rul_on_center() ) ; delay(20);
             }
             break;
             
@@ -160,6 +167,7 @@ void do_command_menu_kalibr(){
               save_to_eprom( EEPROM_POINT0 + point_idx );
               update_point();
               old_point_idx = 99;
+              while ( !rul_on_center() ) ; delay(20);
             }
             break;
             
@@ -167,6 +175,7 @@ void do_command_menu_kalibr(){
             if ( !is_left ) {
               autopilot_on();
               is_menu = false;
+              while ( !rul_on_center() ) ; delay(20);
             }
             break;
             
@@ -201,12 +210,22 @@ void update_gaz() { // не в центре
     }  
 }
 
+bool rul_on_center(){
+  scan_controls();
+  return ( ( adc_rul > CENTER_JOY-DELTA_JOY ) && ( adc_rul < CENTER_JOY+DELTA_JOY ) );
+}
+
+bool gaz_on_center(){
+  scan_controls();
+  return ( ( adc_gaz > CENTER_JOY-DELTA_JOY ) && ( adc_gaz < CENTER_JOY+DELTA_JOY ) );
+}
+
 bool update_key() {
   bool res=false;
   if (is_menu) {
-    if ( ( adc_rul > CENTER_JOY-DELTA_JOY ) && ( adc_rul < CENTER_JOY+DELTA_JOY ) ) {
+    if ( rul_on_center() ) {
       center_rul = true;
-      if ( ( adc_gaz > CENTER_JOY-DELTA_JOY ) && ( adc_gaz < CENTER_JOY+DELTA_JOY ) ) {
+      if ( gaz_on_center() ) {
         center_gaz = true;
       } else update_gaz();
     } else update_rul();    

@@ -106,6 +106,7 @@ void autopilot_on(){
   tm_auto = millis() + TIME_SEND_POINT;
   ctrl.point.lat = flash.points[point_idx].lat;
   ctrl.point.lon = flash.points[point_idx].lon;
+  auto_point = point_idx;
 }
 
 void autopilot_off(){

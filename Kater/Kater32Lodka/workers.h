@@ -32,12 +32,9 @@ void update_servo() {
   int16_t d;
 
   if ( update_autopilote() ) { // получаем коррекцию курса по автопилоту и дистанцию до цели
-    tlm.gps.sat.autopilot = 1;
-    rul = corr_autopilote; // в режиме автопилота рулем управляет робот
-    gaz = 20;      
-  } else {
-    tlm.gps.sat.autopilot = 0;
-  }
+    rul = -corr_autopilote; // в режиме автопилота рулем управляет робот
+    gaz = -120;      
+  } 
   tlm.rezerv = corr_autopilote; // TODO Debug
 
   d = map( gaz, -127, 128, 700, 2200 );
@@ -45,6 +42,7 @@ void update_servo() {
 
   d = rul;
   d -= ctrl.trim;
+  DBG.print("Rul=");DBG.println(d);  
   if (d > 127) d = 127;
   if (d < -126) d = -126;
   //DBG.print("rul="); DBG.print(rul); DBG.print(" d="); DBG.println(d);

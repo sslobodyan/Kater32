@@ -17,6 +17,7 @@
 stControl ctrl; // управление с пульта
 stTelemetry tlm, old; // телеметрия с катера
 uint8_t old_point_idx=99;
+uint8_t auto_point = 99; // номер точки автопилота
 
 EasyTransfer Pult; 
 EasyTransfer Kater;
@@ -49,6 +50,7 @@ int button_cnt=0;
 
 #define TIME_BUNKER_OPEN 5000 // время открытия бункера
 #define TIME_SEND_POINT 1000 // время передачи точки автопилоту
+#define TIME_TO_NOTHING_RESEIVE 1000 // через сколько миллисекунд понимаем что сигнал потерян
 
 uint16_t adc_rul, adc_gaz;
 

@@ -10,6 +10,7 @@
 
 #include "radio.h"
 #include "vars.h"
+#include "navigate.h"
 #include "eprom.h"
 #include "screen.h"
 #include "libs.h" 
@@ -63,8 +64,14 @@ void setup() {
 
 void loop() {
 
-  if ( millis() - tm > 500 ) { // гасим светодиод принятого пакета
+  if ( (millis() - tm > TIME_TO_NOTHING_RESEIVE ) && (tm>0) ) { // гасим светодиод принятого пакета
     LED_OFF;
+    cnt_radio = false;
+    init_vars();
+    tft.fillRect(XSONAR, YSONAR, WSONAR, HSONAR, ILI9341_BLACK);
+    //show_barracuda();
+    //while (HC12.available()) HC12.read();
+    tm = 0;//millis() + 60000;
   }
   
   if ( millis() > tm_bunker ) { // опускаем бункер
@@ -79,8 +86,10 @@ void loop() {
     //for (byte i=0; i<40; i++) { DBG.print( tlm.sonar.map[i],HEX ); DBG.print( "," ); } DBG.println();
     LED_ON;
     tm = millis();
+    cnt_radio = true;
     //update_test( tlm.sonar.treshold );
-    update_test( tlm.kurs*2 );
+    //update_test( tlm.kurs*2 );
+    update_distanse();
   }
 
   if ( millis() > tm_loop ) { // прошло 80 мс
@@ -116,10 +125,10 @@ void init_vars() {
   tlm.sonar.deep=0;
   old.sonar.deep=1;
   
-  tlm.bort=1;
+  tlm.bort=0;
   old.bort = 1;
   
-  tlm.tok=1;
+  tlm.tok=0;
   old.tok = 1;
 
   tlm.kurs=45;
@@ -127,5 +136,8 @@ void init_vars() {
 
   tlm.gps.coord.lat = BAD_POINT;
   tlm.gps.coord.lon = BAD_POINT;
+
+  tlm.gps.sat.speed = 0;
+  old.gps.sat.speed = 1;
 }
 

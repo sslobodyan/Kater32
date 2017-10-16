@@ -103,18 +103,15 @@ void setup() {
   home_pnt.lon = BAD_POINT;
   LED4_OFF;
 
-  init_sensors();
+  tm_sensors = millis() + 2000;
 
   init_vars();
 
-  
   LED_OFF;
   LED1_OFF;
   LED4_OFF;
   DBG.println("Setup DONE\n");
   DBG.flush();
-
-  
   
 }
 
@@ -126,6 +123,15 @@ void loop() {
 
   if ( millis() > tm_gps ) {
     tlm.gps.sat.present = false;
+  }
+
+  if ( millis() > tm_sensors ) {
+    if (tm_sensors > 0) {
+      init_sensors();
+      tm_sensors = 0;
+    } else {
+      update_sensors();      
+    }
   }
 
   update_gps();
@@ -145,8 +151,6 @@ void loop() {
         home_pnt = ctrl.home;
       }
 
-      update_sensors();
-      
       Kater.sendData();
   }
 

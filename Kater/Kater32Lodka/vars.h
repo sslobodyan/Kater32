@@ -19,7 +19,7 @@ int8_t rul, gaz, bunker;
 
 
 
-uint32_t tm, tm_gps;
+uint32_t tm, tm_gps, tm_sensors;
 
 uint8_t base_heading = 0;
 float kurs_gps = 0;

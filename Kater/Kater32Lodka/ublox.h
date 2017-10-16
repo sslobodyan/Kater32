@@ -238,7 +238,7 @@ void update_gps() {
         tlm.gps.sat.speed = velned.gSpeed / 10;          
         kurs_gps = velned.heading / 100000;      
         int kurs = (int) kurs_gps / 2;
-        if ( velned.gSpeed > 100 ) { // поехали со скоростью более 1 метра в секунду
+        if ( (velned.gSpeed > 100) && (gaz < -50) ) { // поехали со скоростью более 1 метра в секунду
           if ( cnt_base_heading > 0 ) { 
             sum_base_heading += kurs;
             cnt_base_heading--;

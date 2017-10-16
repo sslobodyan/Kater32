@@ -16,6 +16,7 @@ void update_sat();
 void update_sat_speed();
 void update_gps_present();
 void update_test(uint16_t data);
+String utf8rus(String source);
 
 #define XUBORT 10
 #define YUBORT 4
@@ -30,7 +31,7 @@ void update_test(uint16_t data);
 #define YPOINT 126
 
 #define XSAT 18
-#define YSAT 166
+#define YSAT 164
 
 #define XSPEED 6
 #define YSPEED 220
@@ -38,6 +39,8 @@ void update_test(uint16_t data);
 #define XTEST 0
 #define YTEST 200
 
+#define XDISTANSE 0
+#define YDISTANSE 200
 
 #define TWIDTH 3 // ширина трешолда
 
@@ -102,10 +105,17 @@ void update_screen(bool refresh=false){
 }
 
 void update_main_screen(bool refresh=false) {  
-  // мигающий квадратик
+  // квадратик как признак приема пакета
   if (cnt_radio) tft.fillRect(XVECTOR-36, YVECTOR-36, 8, 8, ILI9341_YELLOW);
   else tft.fillRect(XVECTOR-36, YVECTOR-36, 8, 8, ILI9341_BLACK);
-  cnt_radio = !cnt_radio;
+  //cnt_radio = !cnt_radio;
+
+  // квадратик как признак автопилота
+  if ( old.gps.sat.autopilot != tlm.gps.sat.autopilot ) {
+    old.gps.sat.autopilot = tlm.gps.sat.autopilot;
+    if ( tlm.gps.sat.autopilot ) tft.fillRect(XVECTOR+36, YVECTOR-36, 8, 8, ILI9341_GREEN);
+    else tft.fillRect(XVECTOR+36, YVECTOR-36, 8, 8, ILI9341_BLACK);
+  }
   
   if (refresh) {
     refresh_static();
@@ -189,7 +199,7 @@ void refresh_static(){
   tft.drawFastHLine(0, YVECTOR+40,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
 
   tft.drawFastHLine(0, YSAT-4,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
-  tft.drawFastHLine(0, YSAT+18,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
+  tft.drawFastHLine(0, YSAT+17,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
 
   tft.drawFastHLine(0, YSPEED-4,  XSONAR-TWIDTH-2, ILI9341_WHITE);  
 }
@@ -246,7 +256,7 @@ void update_gps_present(){
     //tft.setCursor(XSAT-14, YSAT);
     //tft.print("@");    
     tft.setCursor(XSPEED+40, YSPEED);
-    tft.print("m/s");
+    tft.print(utf8rus(F("м/с")));
   } else {
     tft.setCursor(XSAT-14, YSAT);
     tft.print("      ");        
@@ -453,12 +463,41 @@ void update_test(uint16_t data){
     tft.setTextColor(ILI9341_YELLOW,ILI9341_BLACK);
     tft.print(button_cnt);  
     tft.print(" ");
-
 }
 
-void screen_hello(void) {
-  byte static cnt;
-  
+void update_distanse(){
+  // нижняя строка - до домашней точки
+    float to_home = GetDistanceInM( tlm.gps.coord.lat, tlm.gps.coord.lon, flash.points[0].lat, flash.points[0].lon);
+    tft.setCursor(XDISTANSE, YDISTANSE);
+    tft.setTextSize(2);
+    tft.setTextColor(ILI9341_RED,ILI9341_BLACK);
+    if ((to_home < 999.0) && (to_home > 2)) {
+      tft.print("0 ");  
+      if (to_home < 10.0) tft.print(" ");
+      if (to_home < 100.0) tft.print(" ");
+      tft.print(to_home,1);      
+    } else {
+      tft.print("       ");  
+    }
+    
+  // верхняя строка - до целевой точки
+  float to_point = GetDistanceInM( tlm.gps.coord.lat, tlm.gps.coord.lon, flash.points[auto_point].lat, flash.points[auto_point].lon);
+  tft.setCursor(XDISTANSE, YDISTANSE-16);
+  tft.setTextColor(ILI9341_YELLOW,ILI9341_BLACK);
+  tft.setTextSize(2);
+  if ( tlm.gps.sat.autopilot && (auto_point < POINT_NUM) && (to_point < 999.0) && (to_point > 2.0)) {
+    //tft.print("> ");        
+    tft.print(auto_point);tft.print(" ");
+    if (to_point < 10) tft.print(" ");
+    if (to_point < 100) tft.print(" ");
+    tft.print(to_point,1);
+  } else {
+    tft.print("       ");    
+  }
+}
+
+
+void show_barracuda(){
   #define P_HEIGHT 190
   #define P_WIDTH 192  
   #define P_WIDTH_DIV_8 P_WIDTH/8
@@ -476,6 +515,13 @@ void screen_hello(void) {
       }
     }
 
+}
+
+void screen_hello(void) {
+  byte static cnt;
+  
+    show_barracuda();
+    
     tft.setTextColor(ILI9341_WHITE);
     tft.setTextSize(2);
     tft.setCursor(X_LOGO+10, Y_LOGO + P_HEIGHT + 5);
