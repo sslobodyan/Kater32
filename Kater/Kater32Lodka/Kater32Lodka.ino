@@ -1,4 +1,5 @@
 #include "arduino.h"
+#include <EEPROM.h>
 #include "Wire.h"
 //#include <HardWire.h>
 
@@ -14,6 +15,7 @@ EasyTransfer Kater;
 
 #include "radio.h"
 #include "vars.h"
+#include "eeprom.h"
 #include "ublox.h"
 #include "navigate.h"
 #include "autopilote.h"
@@ -22,6 +24,8 @@ EasyTransfer Kater;
 #include "imu.h"
 #include "test.h"
 #include "sensors.h"
+#include "console.h"
+
 
 #define INTERVAL 500
 
@@ -72,6 +76,16 @@ void setup() {
 
   setup_workers();
 
+  setup_eeprom();
+  read_from_eprom();
+  if ((flash.carp != 'C') || (flash.winner != 'W')) { // флеш не инициализирована
+    init_flash();
+    read_from_eprom();
+  } else {
+    flash.cnt += 1;
+    save_to_eprom( EEPROM_CNT );
+  }
+
   tlm.kurs = 255;
 
   //testI2C();
@@ -117,8 +131,9 @@ void setup() {
 
 
 void loop() {
-  if ( millis() > tm ) {
+  if ( millis() > tm ) { // нет связи
     LED_OFF;
+    if (tm_no_radio == 0) tm_no_radio = millis();
   }
 
   if ( millis() > tm_gps ) {
@@ -138,11 +153,9 @@ void loop() {
 
   if(Pult.receiveData()){ // обработка принятого пакета
       LED_ON;
+      tm_no_radio = 0;
       tm = millis() + INTERVAL;
       update_workers();
-      // отправляем ответ
-      // test_data(); // TODO DEBUG
-      //test_sonar(); // TODO DEBUG
     
       tlm.sonar.delta = ctrl.sonar.delta;
       tlm.sonar.speed = ctrl.sonar.speed;
@@ -162,6 +175,8 @@ void loop() {
     attachInterrupt(SONAR_INT_PIN, ExternSonarInt, RISING); // ставим сторожа на новое эхо
   }
 
+  update_bt_command();
+  
 /*
   uint32_t t = millis();
   Compass.update(); // 10 ms ???
@@ -170,6 +185,6 @@ void loop() {
   byte heading_base = Compass.tilledHeading(); // 21 mks
   tlm.kurs = heading_base / 2;
 */
-
+  //DBG.println("---");
  
 }

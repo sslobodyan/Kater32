@@ -28,21 +28,47 @@ void setup_workers() {
   update_lights();
 }
 
+
+bool rul_in_center(){
+  if ( (rul < -30) || (rul > 30)) return false;
+  else return true;
+}
+
+
+float rul_heading=2*BAD_GRD;
+
 void update_servo() {
   int16_t d;
 
   if ( update_autopilote() ) { // получаем коррекцию курса по автопилоту и дистанцию до цели
     rul = -corr_autopilote; // в режиме автопилота рулем управляет робот
-    gaz = -120;      
-  } 
-  tlm.rezerv = corr_autopilote; // TODO Debug
+    gaz = -flash.gaz;      
+    d = rul;
+  } else { // попробовать коррекцию прямого хода по ГПС
+    if ( (auto_corr) ) { 
+      if ( rul_in_center() ) {
+        if (rul_heading == 2*BAD_GRD) {
+          if ( (tlm.gps.sat.speed > 10) && (gaz < -30) ) {
+            rul_heading = kurs_gps;
+            init_pid();
+          }
+        } else {
+          rul = -pid_corr(kurs_gps, rul_heading);
+        }
+      } else {
+        rul_heading = 2*BAD_GRD;
+      }      
+    } else {
+      rul_heading = 2*BAD_GRD;
+    }
+    d = rul;
+    d -= ctrl.trim; // учитываем триммер только в ручном режиме
+  }
 
-  d = map( gaz, -127, 128, 700, 2200 );
-  if ( Timer3.getCompare1() != d ) Timer3.setCompare1(d);
-
-  d = rul;
-  d -= ctrl.trim;
-  DBG.print("Rul=");DBG.println(d);  
+  if (show_rul) { // && (rul_heading != 2*BAD_GRD) ) {
+    DBG.print("rul_heading "); DBG.print(rul_heading); DBG.print(" Kurs_GPS "); DBG.print(kurs_gps);
+    DBG.print(" Rul=");DBG.println(d);  
+  }
   if (d > 127) d = 127;
   if (d < -126) d = -126;
   //DBG.print("rul="); DBG.print(rul); DBG.print(" d="); DBG.println(d);
@@ -52,6 +78,11 @@ void update_servo() {
   
   d = map( bunker, 0, 1, 700, 2200 );
   if ( Timer3.getCompare3() != d ) Timer3.setCompare3(d);
+
+  d = map( gaz, -127, 128, 700, 2200 );
+  if ( Timer3.getCompare1() != d ) Timer3.setCompare1(d);
+
+
 }
 
 void update_workers() {
@@ -63,6 +94,13 @@ void update_workers() {
     autopilote_on( ctrl.point );
   }
 
+  if (tm_no_radio > 0) {
+    if (millis() - tm_no_radio > 1000) { // стопмашина
+      rul = 0;
+      gaz = 0;      
+    }
+  }
+  
   update_servo();
   update_lights();
 

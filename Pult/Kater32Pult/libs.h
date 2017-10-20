@@ -61,27 +61,33 @@ String utf8rus(String source)
 }
 
 bool is_point_fill( stPoint point ) {
-  bool res = true;
-  if ( point.lat == BAD_POINT ) res = false; 
-  if ( point.lon == BAD_POINT ) res = false;
-  return res;
+  if ( point.lat == BAD_POINT ) return false; 
+  if ( point.lon == BAD_POINT ) return false;
+  // даже запомненные точки но далее 500 метров от домашней считаем пустыми
+  float to_point_from_home = GetDistanceInM( point.lat, point.lon, flash.points[0].lat, flash.points[0].lon);
+  if (to_point_from_home > 500.0) return false;
+  return true;
 }
 
 void open_bunker() {
     if ( ctrl.light.bunker  ) return;
-    if ( (!is_point_fill( flash.points[point_idx]) && (is_point_fill( tlm.gps.coord )) ) ) {
-      flash.points[point_idx].lat = tlm.gps.coord.lat;  
-      flash.points[point_idx].lon = tlm.gps.coord.lon;  
-      save_to_eprom();
-      if ( point_idx==0 ) { // запомним домашнюю точку
-        ctrl.home.lat = tlm.gps.coord.lat;  
-        ctrl.home.lon = tlm.gps.coord.lon;
-      }
-      if (point_idx < POINT_NUM-1 ) point_idx++;
-    }
     ctrl.light.bunker = 1;
     tm_bunker = millis() + TIME_BUNKER_OPEN;
     old_point_idx = 99;
+    if ( !is_point_fill( tlm.gps.coord ) ) return;
+    if ( point_idx > 0 ) {
+      if ( is_point_fill( flash.points[point_idx])  ) return;
+    }
+    // запоминаем точку
+    flash.points[point_idx].lat = tlm.gps.coord.lat;  
+    flash.points[point_idx].lon = tlm.gps.coord.lon;  
+    save_to_eprom();
+    if ( point_idx==0 ) { // запомним домашнюю точку
+      ctrl.home.lat = tlm.gps.coord.lat;  
+      ctrl.home.lon = tlm.gps.coord.lon;
+    }
+    // переключаемся на следующую
+    if (point_idx < POINT_NUM-1 ) point_idx++;
 }
 
 void shift_sonar_buffer(bool depper){

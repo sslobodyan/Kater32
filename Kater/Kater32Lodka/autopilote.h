@@ -1,11 +1,24 @@
+#define PID_KP 1.0
+#define PID_KI 2.0
 
 float src_lat, src_lon, dest_lat, dest_lon;
 
 void init_pid() {
-  pid_kp = (float) PID_KP * ctrl.pid / 128.0;
-  pid_ki = (float) PID_KI * ctrl.pid / 128.0;
+  //pid_kp = (float) PID_KP * ctrl.pid / 128.0;
+  //pid_kd = (float) PID_KI * ctrl.pid / 128.0;
+  
+  //pid_kp = (float) flash.pid_kp * ctrl.pid / 1280.0;
+  //pid_kd = (float) flash.pid_kd * ctrl.pid / 1280.0;
+  
+  pid_kp = (float) flash.pid_kp / 1000.0;
+  pid_ki = (float) flash.pid_ki / 1000.0;
+  pid_kd = (float) flash.pid_kd / 1000.0;
+  min_pi = (float) flash.min_pi / 1000.0;
+  max_pi = (float) flash.max_pi / 1000.0;
+  
   DBG.print("PID Kp=");DBG.println(pid_kp,6);
   DBG.print("PID Ki=");DBG.println(pid_ki,6);
+  DBG.print("PID Kd=");DBG.println(pid_kd,6);
 }
 
 bool is_in_auto() {
@@ -46,8 +59,9 @@ void autopilote_off() {
 }
 
 int8_t pid_corr(float est, float nado) {
-  //float kp, ki; //, kd;
+  float res_p, res_i, res_d;
   static float old_pid_error;
+  static float old_res_i;
   float pid_error;
   float res;
 
@@ -59,11 +73,24 @@ int8_t pid_corr(float est, float nado) {
   // приводим градус ошибки к +-180 !!! VERY IMPORTMANT !!!!
   while (pid_error < -180) pid_error+=360;
   while (pid_error > 180) pid_error-=360;
+
+  res_p = (float) pid_kp * pid_error; // пропорционально ошибке
   
-  res = pid_kp*pid_error + pid_ki*(old_pid_error-pid_error);
+  res_i = old_res_i + pid_ki * pid_error; // накопитель отклонения (интегратор)
+  if (res_i > max_pi) res_i = max_pi;
+  if (res_i < min_pi) res_i = min_pi;
+  
+  res_d = (float) pid_kd*(pid_error-old_pid_error); // скорость изменения ошибки (дифференциатор)
+  
+  //res = (float) pid_kp*pid_error + pid_kd*(pid_error-old_pid_error);
+  res = res_p + res_i + res_d;
   old_pid_error = pid_error;
+  old_res_i = res_i; // накапливаем интегратор
   if (res > 100) res = 100;
   if (res < -100) res = -100;
+  if (show_pid) {
+    DBG.print("PID (");DBG.print(est);DBG.print(",");DBG.print(nado);DBG.print(")=");DBG.println(res);
+  }
   return res;
 }
 

@@ -16,6 +16,9 @@ void update_sat();
 void update_sat_speed();
 void update_gps_present();
 void update_test(uint16_t data);
+void show_barracuda();
+void show_barracuda_dma();
+void screen_hello(void);
 String utf8rus(String source);
 
 #define XUBORT 10
@@ -73,6 +76,7 @@ const stVector vector[16] = {
   { -13, -32}
 };
 
+int sonar_cnt=0;
 ////////////////////////////////////////////////////////////////////
 
 void screen_setup(){
@@ -130,7 +134,18 @@ void update_main_screen(bool refresh=false) {
     else update_menu_screen_kalibr(); 
   }
   else {
-    if (old.sonar.cnt != tlm.sonar.cnt) update_sonar_data();   
+    if (old.sonar.cnt != tlm.sonar.cnt) {
+      update_sonar_data();   
+      sonar_cnt = 0;
+    }
+    else {
+      if (sonar_cnt++ > 5) {
+        sonar_cnt = 5;
+        //screen_hello();  
+        show_barracuda_dma();
+      }
+      
+    }
   }
   
   if (old.sonar.delta != tlm.sonar.delta) update_lineika(); 
@@ -485,7 +500,7 @@ void update_distanse(){
   tft.setCursor(XDISTANSE, YDISTANSE-16);
   tft.setTextColor(ILI9341_YELLOW,ILI9341_BLACK);
   tft.setTextSize(2);
-  if ( tlm.gps.sat.autopilot && (auto_point < POINT_NUM) && (to_point < 999.0) && (to_point > 2.0)) {
+  if ( tlm.gps.sat.autopilot && (auto_point < POINT_NUM) && (to_point < 999.0) /* && (to_point > 2.0) */ ) {
     //tft.print("> ");        
     tft.print(auto_point);tft.print(" ");
     if (to_point < 10) tft.print(" ");
@@ -495,7 +510,6 @@ void update_distanse(){
     tft.print("       ");    
   }
 }
-
 
 void show_barracuda(){
   #define P_HEIGHT 190
@@ -509,19 +523,36 @@ void show_barracuda(){
         byte c = image_data_logo[m*P_WIDTH_DIV_8+k];
         for (byte i=0; i<8; i++) {
           if ( c & 0b10000000 ) tft.drawPixel(X_LOGO+k*8+i, m+Y_LOGO, ILI9341_YELLOW);
-          //else tft.drawPixel(X_LOGO+k*8+i, m+Y_LOGO, ILI9341_BLUE);
+          else tft.drawPixel(X_LOGO+k*8+i, m+Y_LOGO, ILI9341_BLACK);
           c = c << 1;
         }
       }
     }
-
 }
 
+void show_barracuda_dma(){
+    uint16_t line[P_WIDTH];
+    for (byte m=0; m<P_HEIGHT; m++) { 
+      for (byte k=0; k<P_WIDTH_DIV_8; k++) { // ==160/8
+        byte c = image_data_logo[m*P_WIDTH_DIV_8+k];
+        for (byte i=0; i<8; i++) {
+          if ( c & 0b10000000 ) line[k*8+i] = ILI9341_YELLOW;
+          else line[k*8+i] = ILI9341_BLACK;
+          c = c << 1;
+        }
+      }
+      tft.drawSpriteLine(X_LOGO, Y_LOGO+m, P_WIDTH, line);
+    }
+    tft.fillRect(XSONAR, YSONAR, WSONAR, Y_LOGO, ILI9341_BLACK);
+    tft.fillRect(XSONAR, Y_LOGO+P_HEIGHT, WSONAR, 240-YSONAR-P_HEIGHT, ILI9341_BLACK);
+    tft.drawRect(XSONAR, YSONAR, WSONAR, HSONAR, ILI9341_BLACK);
+}
+
+
 void screen_hello(void) {
-  byte static cnt;
-  
-    show_barracuda();
-    
+    byte static cnt;
+    //show_barracuda();
+    show_barracuda_dma();
     tft.setTextColor(ILI9341_WHITE);
     tft.setTextSize(2);
     tft.setCursor(X_LOGO+10, Y_LOGO + P_HEIGHT + 5);

@@ -216,7 +216,7 @@ bool processGPS() {
 void update_gps() {
       if ( processGPS() ) {
         if ( !tlm.gps.sat.present ) {
-          DBG.println("GPS found!");
+          //DBG.println("GPS found!");
           tlm.gps.sat.present = true;
         }
         tm_gps = millis() + 3000;
@@ -265,18 +265,30 @@ void update_gps() {
 
 
 void ublox_setup() {
+/*  
   static const char PROGMEM to_19200_UBX[] = {
     0xb5,0x62,0x06,0x00,0x14,0x00,0x01,0x00,
     0x00,0x00,0xd0,0x08,0x00,0x00,0x00,0x4b,
     0x00,0x00,0x07,0x00,0x01,0x00,0x00,0x00,
     0x00,0x00,0x46,0x4b}; 
-  static const char PROGMEM  UBX_5_Hz[] = {0xb5,0x62,0x06,0x08,0x06,0x00,0xc8,0x00,0x01,0x00,0x01,0x00,0xde,0x6a};
-  static const char PROGMEM  UBX_NAV[5][11] = {
-    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x02,0x01,0x0e,0x47},
-    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x21,0x01,0x2d,0x85},
-    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x12,0x01,0x1e,0x67},
-    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x06,0x01,0x12,0x4f},
-    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x04,0x01,0x10,0x4b}
+*/    
+  static const char PROGMEM to_38400_UBX[] = {
+    0xB5,0x62,0x06,0x00,0x14,0x00,0x01,0x00,0x00,0x00,0xD0,0x08,0x00,0x00,0x00,0x96,0x00,0x00,0x07,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x91,0x84
+  };
+
+#define SPEED_UBLOX_ARR to_38400_UBX   
+#define SPEED_UBLOX_PRT 38400
+
+  static const char PROGMEM  UBX_5_Hz[]  = {0xb5,0x62,0x06,0x08,0x06,0x00,0xc8,0x00,0x01,0x00,0x01,0x00,0xde,0x6a};
+  static const char PROGMEM  UBX_10_Hz[] = {0xB5,0x62,0x06,0x08,0x06,0x00,0x64,0x00,0x01,0x00,0x01,0x00,0x7A,0x12};  
+
+#define NAV_CNT 3  
+  static const char PROGMEM  UBX_NAV[ NAV_CNT ][11] = {
+    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x02,0x01,0x0e,0x47}, // POSLLH
+//    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x21,0x01,0x2d,0x85}, // TIMEUTC
+    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x12,0x01,0x1e,0x67}, // VELNED
+    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x06,0x01,0x12,0x4f}, // SOL
+//    { 0xb5,0x62,0x06,0x01,0x03,0x00,0x01,0x04,0x01,0x10,0x4b}  // DOP
     };
   static const char PROGMEM  UBX_Pedestrian[] = {
     0xb5,0x62,0x06,0x24,0x24,0x00,0xff,0xff,0x03,0x02,0x00,0x00,0x00,0x00,0x10,0x27,
@@ -288,59 +300,86 @@ void ublox_setup() {
   DBG.println("Setup UBLOX");
   delay(200);
   UBLOX.begin(9600);
-  for (byte i=0; i<sizeof(to_19200_UBX); i++) {
-    UBLOX.write( pgm_read_byte(&(to_19200_UBX[i]) ) );
+  for (byte i=0; i<sizeof(SPEED_UBLOX_ARR); i++) {
+    UBLOX.write( pgm_read_byte(&(SPEED_UBLOX_ARR[i]) ) );
   }
   UBLOX.flush();
   delay(100);
 
-  UBLOX.begin(38400);
-  for (byte i=0; i<sizeof(to_19200_UBX); i++) {
-    UBLOX.write( pgm_read_byte(&(to_19200_UBX[i]) ) );
+  UBLOX.begin(19200);
+  for (byte i=0; i<sizeof(SPEED_UBLOX_ARR); i++) {
+    UBLOX.write( pgm_read_byte(&(SPEED_UBLOX_ARR[i]) ) );
   }
   UBLOX.flush();
   delay(100);
   
   UBLOX.begin(57600);
-  for (byte i=0; i<sizeof(to_19200_UBX); i++) {
-    UBLOX.write( pgm_read_byte(&(to_19200_UBX[i]) ) );
+  for (byte i=0; i<sizeof(SPEED_UBLOX_ARR); i++) {
+    UBLOX.write( pgm_read_byte(&(SPEED_UBLOX_ARR[i]) ) );
   }
   UBLOX.flush();
   delay(100);
   
   UBLOX.begin(115200);
-  for (byte i=0; i<sizeof(to_19200_UBX); i++) {
-    UBLOX.write( pgm_read_byte(&(to_19200_UBX[i]) ) );
+  for (byte i=0; i<sizeof(SPEED_UBLOX_ARR); i++) {
+    UBLOX.write( pgm_read_byte(&(SPEED_UBLOX_ARR[i]) ) );
   }
   UBLOX.flush();
-  delay(100);
-  
-  
-  UBLOX.begin(19200);
- 
-  for (byte i=0; i<11; i++) UBLOX.write( pgm_read_byte(&(UBX_NAV[0][i])));
-  UBLOX.flush();
   delay(50);
-  for (byte i=0; i<11; i++) UBLOX.write( pgm_read_byte(&(UBX_NAV[1][i])));
-  UBLOX.flush();
+    
+  UBLOX.begin( SPEED_UBLOX_PRT );
   delay(50);
-  for (byte i=0; i<11; i++) UBLOX.write( pgm_read_byte(&(UBX_NAV[2][i])));
-  UBLOX.flush();
-  delay(50);
-  for (byte i=0; i<11; i++) UBLOX.write( pgm_read_byte(&(UBX_NAV[3][i])));
-  UBLOX.flush();
-  delay(50);
-  for (byte i=0; i<11; i++) UBLOX.write( pgm_read_byte(&(UBX_NAV[4][i])));
-  UBLOX.flush();
-  delay(50);
+
+  for (byte n=0; n<NAV_CNT; n++) {
+    for (byte i=0; i<11; i++) UBLOX.write( pgm_read_byte(&(UBX_NAV[n][i])));
+    UBLOX.flush();
+    delay(50);
+  }
 
   for (byte i=0; i<sizeof(UBX_Pedestrian); i++) UBLOX.write( pgm_read_byte(&(UBX_Pedestrian[i])));
   UBLOX.flush();
   delay(50);
 
-  for (byte i=0; i<sizeof(UBX_5_Hz); i++) UBLOX.write( pgm_read_byte(&(UBX_5_Hz[i])));
+  //for (byte i=0; i<sizeof(UBX_5_Hz); i++) UBLOX.write( pgm_read_byte(&(UBX_5_Hz[i])));
+  for (byte i=0; i<sizeof(UBX_10_Hz); i++) UBLOX.write( pgm_read_byte(&(UBX_10_Hz[i])));
   UBLOX.flush();
   delay(50);
 
 }
+
+/*
+38400
+09:28:39  0000  B5 62 06 00 14 00 01 00 00 00 D0 08 00 00 00 96  µb........Ð.....
+          0010  00 00 07 00 01 00 00 00 00 00 91 84              .............
+
+57600
+09:28:39  0000  B5 62 06 00 14 00 01 00 00 00 D0 08 00 00 00 E1  µb........Ð....á
+          0010  00 00 07 00 01 00 00 00 00 00 DC BD              ..........Ü½.
+
+115200
+09:28:39  0000  B5 62 06 00 14 00 01 00 00 00 D0 08 00 00 00 C2  µb........Ð....Â
+          0010  01 00 07 00 01 00 00 00 00 00 BE 72              ..........¾r.
+
+POSLLH
+09:28:39  0000  B5 62 06 01 03 00 01 02 01 0E 47                 µb........G.
+
+SOL
+09:28:39  0000  B5 62 06 01 03 00 01 06 01 12 4F                 µb........O.
+
+VELNED
+09:28:39  0000  B5 62 06 01 03 00 01 12 01 1E 67                 µb........g.
+
+TIMEUTC
+09:53:36  0000  B5 62 06 01 03 00 01 21 01 2D 85                 µb.....!.-..
+
+DOP
+09:53:36  0000  B5 62 06 01 03 00 01 04 01 10 4B                 µb........K.
+
+10Hz
+09:28:39  0000  B5 62 06 08 06 00 64 00 01 00 01 00 7A 12        µb....d.....z..
+
+
+
+
+*/
 

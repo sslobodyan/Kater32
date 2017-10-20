@@ -19,7 +19,7 @@ int8_t rul, gaz, bunker;
 
 
 
-uint32_t tm, tm_gps, tm_sensors;
+uint32_t tm, tm_gps, tm_sensors, tm_no_radio=0;
 
 uint8_t base_heading = 0;
 float kurs_gps = 0;
@@ -28,9 +28,11 @@ int8_t corr_autopilote=0; // коррекция автопилота для ру
 uint16_t sum_base_heading = 0;
 int8_t cnt_base_heading = CNT_HEADING_SAMPLES;
 
-float pid_kp, pid_ki;
-#define PID_KP 1.0
-#define PID_KI 2.0
+float pid_kp, pid_kd, pid_ki, min_pi, max_pi;
+
+bool show_sonar = false, show_rul=false, show_deep=false, auto_corr=false, show_pid=false, show_max=false, show_120=false;
+
+int maximum; // max buf120
 
 stPoint home_pnt;
 
@@ -42,3 +44,4 @@ void init_vars(){
 }
 
 
+void init_pid();

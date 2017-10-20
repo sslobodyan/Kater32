@@ -18,7 +18,7 @@
 #include "keys.h" 
 
 
-#define INTERVAL 80
+#define INTERVAL 100
 
 void scan_controls();
 void send_paket();
@@ -54,7 +54,7 @@ void setup() {
 
   init_vars();
   button = digitalRead( PIN_KEY );
-  if ( !button ) { // при включении нажата кнопка - в менб вместо сонара показывать настройки
+  if ( !button ) { // при включении нажата кнопка - в меню вместо сонара показывать настройки
     menu_sonar = false;  
   }
   update_screen(true); // refresh statik
@@ -68,7 +68,7 @@ void loop() {
     LED_OFF;
     cnt_radio = false;
     init_vars();
-    tft.fillRect(XSONAR, YSONAR, WSONAR, HSONAR, ILI9341_BLACK);
+    //tft.fillRect(XSONAR, YSONAR, WSONAR, HSONAR, ILI9341_BLACK);
     //show_barracuda();
     //while (HC12.available()) HC12.read();
     tm = 0;//millis() + 60000;
@@ -87,8 +87,6 @@ void loop() {
     LED_ON;
     tm = millis();
     cnt_radio = true;
-    //update_test( tlm.sonar.treshold );
-    //update_test( tlm.kurs*2 );
     update_distanse();
   }
 

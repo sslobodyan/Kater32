@@ -113,6 +113,10 @@ void do_command_menu_sonar(){
 
           default: ;
       }
+      if (is_menu == false) { // проверить если нет приема сонара то перерисовать эмблемой, а то не затирается меню
+        
+        
+      }
 }
 
 void do_command_menu_kalibr(){
