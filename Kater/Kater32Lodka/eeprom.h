@@ -102,10 +102,14 @@ void init_flash(void) {
   flash.carp = 'C';
   flash.winner = 'W';
   flash.cnt = 0;
-  flash.pid_kp = 100; // в сотых 100 == 1.0f
-  flash.pid_kd = 200;
-  flash.gaz = 60;
-  flash.sonar_koeff = 40;
+  flash.pid_kp = 2000; // в тысячных 1000 == 1.0f
+  flash.pid_ki = 0;
+  flash.pid_kd = 3000;
+  flash.min_pi = 0;
+  flash.max_pi = 32000;
+  flash.gaz = 100;
+  flash.sonar_koeff = 50;
+  flash.treshold_dno = 70;
   save_to_eprom();
 }
 
