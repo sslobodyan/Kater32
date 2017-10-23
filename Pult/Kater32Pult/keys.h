@@ -113,10 +113,7 @@ void do_command_menu_sonar(){
 
           default: ;
       }
-      if (is_menu == false) { // проверить если нет приема сонара то перерисовать эмблемой, а то не затирается меню
-        
-        
-      }
+      refresh_menu=true;
 }
 
 void do_command_menu_kalibr(){
@@ -185,6 +182,7 @@ void do_command_menu_kalibr(){
             
           default: ;
       }
+      refresh_menu=true;
 }
 
 
@@ -193,8 +191,9 @@ void update_rul() { // не в центре
     if ( center_rul ) {
       center_rul = false;
       if (menu_sonar) do_command_menu_sonar();
-      else do_command_menu_kalibr();
-    }  
+      else do_command_menu_kalibr();  
+      refresh_menu = true;
+    }
 }
 
 void update_gaz() { // не в центре
@@ -205,13 +204,19 @@ void update_gaz() { // не в центре
       if ( adc_gaz < CENTER_JOY-DELTA_JOY ) {
         if (id_menu) {
           id_menu--;
-        } else id_menu = cnt_menu-1;
+        } else {
+          id_menu = cnt_menu-1;
+        }
       } else {
         if (id_menu < cnt_menu-1) {
           id_menu++;
-        } else id_menu=0;
-      }
-    }  
+        } else {
+          id_menu=0;
+        }
+      } 
+      refresh_menu = true;
+    }
+    
 }
 
 bool rul_on_center(){
@@ -246,6 +251,7 @@ bool update_key() {
         res = true;        
       } else {
         refresh_menu = true;
+        first_refresh_menu = true;
         is_menu = true;
       }
     }

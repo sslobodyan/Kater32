@@ -15,6 +15,9 @@ void init_pid() {
   pid_kd = (float) flash.pid_kd / 1000.0;
   min_pi = (float) flash.min_pi / 1000.0;
   max_pi = (float) flash.max_pi / 1000.0;
+
+  old_res_i = 0; // сбрасываем интегратор
+  old_pid_error = 0; // сбрасываем дифференциатор
   
   DBG.print("PID Kp=");DBG.println(pid_kp,6);
   DBG.print("PID Ki=");DBG.println(pid_ki,6);
@@ -44,8 +47,8 @@ void autopilote_on( stPoint pnt ) {
   init_pid();
   set_destination( pnt );
   tlm.gps.sat.autopilot = true;
-  DBG.print("Lat "); DBG.print(pnt.lat); DBG.print("  Lon "); DBG.println( pnt.lon );
-  DBG.println(F("autopilote_on"));
+  DBG.print(F("autopilote_on"));
+  DBG.print(" Destination: Lat "); DBG.print(pnt.lat); DBG.print("  Lon "); DBG.println( pnt.lon );
 }
 
 void autopilote_off() {
@@ -60,8 +63,6 @@ void autopilote_off() {
 
 int8_t pid_corr(float est, float nado) {
   float res_p, res_i, res_d;
-  static float old_pid_error;
-  static float old_res_i;
   float pid_error;
   float res;
 
@@ -73,6 +74,10 @@ int8_t pid_corr(float est, float nado) {
   // приводим градус ошибки к +-180 !!! VERY IMPORTMANT !!!!
   while (pid_error < -180) pid_error+=360;
   while (pid_error > 180) pid_error-=360;
+
+  // на больших углах тупо руль до упора
+  if (pid_error > 60) return 100;
+  if (pid_error < -60) return -100;
 
   res_p = (float) pid_kp * pid_error; // пропорционально ошибке
   

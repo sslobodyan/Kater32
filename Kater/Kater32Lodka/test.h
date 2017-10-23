@@ -32,7 +32,6 @@ void test_sonar() {
     tlm.sonar.map[i/2] = (buf[i] << 4) + buf[i+1];
   }
   
-  //tlm.sonar.cnt += 1; 
 }
 
 void test_data() {

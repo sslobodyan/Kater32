@@ -103,8 +103,8 @@ void init_flash(void) {
   flash.winner = 'W';
   flash.cnt = 0;
   flash.pid_kp = 2000; // в тысячных 1000 == 1.0f
-  flash.pid_ki = 0;
-  flash.pid_kd = 3000;
+  flash.pid_ki = 5000;
+  flash.pid_kd = 5000;
   flash.min_pi = 0;
   flash.max_pi = 32000;
   flash.gaz = 100;

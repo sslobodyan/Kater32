@@ -28,8 +28,14 @@ stMenu menu_for_sonar[CNT_MENU] = {
 void show_menu_sonar() {
   tft.setTextSize(3);
   for(byte i=0; i<CNT_MENU; i++) {
-    if ( i == id_menu ) tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE); 
-    else tft.setTextColor(ILI9341_YELLOW); 
+    if ( i == id_menu ) {
+      tft.fillRect(XMENU, YMENU+HEIGHTLINEMENU*i, WIDTHMENU, HEIGHTLINEMENU, ILI9341_BLACK);
+      tft.setTextColor(ILI9341_WHITE); 
+    }
+    else {
+      tft.fillRect(XMENU, YMENU+HEIGHTLINEMENU*i, WIDTHMENU, HEIGHTLINEMENU, ILI9341_BLUE);
+      tft.setTextColor(ILI9341_YELLOW); 
+    }
     tft.setCursor( XMENU+4, YMENU+2+HEIGHTLINEMENU*i );
     tft.print( utf8rus( menu_for_sonar[ i ].title ) );  
     switch ( menu_for_sonar[ i ].id ) {
@@ -68,8 +74,14 @@ stMenu menu_for_kalibr[CNT_MENU_KALIBR] = {
 void show_menu_kalibr() {
   tft.setTextSize(3);
   for(byte i=0; i<CNT_MENU_KALIBR; i++) {
-    if ( i == id_menu ) tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE); 
-    else tft.setTextColor(ILI9341_YELLOW); 
+    if ( i == id_menu ) {
+      tft.fillRect(XMENU, YMENU+HEIGHTLINEMENU*i, WIDTHMENU, HEIGHTLINEMENU, ILI9341_BLACK);
+      tft.setTextColor(ILI9341_WHITE); 
+    }
+    else {
+      tft.fillRect(XMENU, YMENU+HEIGHTLINEMENU*i, WIDTHMENU, HEIGHTLINEMENU, ILI9341_BLUE);
+      tft.setTextColor(ILI9341_YELLOW); 
+    }
     tft.setCursor( XMENU+4, YMENU+2+HEIGHTLINEMENU*i );
     tft.print( utf8rus( menu_for_kalibr[ i ].title ) );  
     switch ( menu_for_kalibr[ i ].id ) {
@@ -87,34 +99,33 @@ void show_menu_kalibr() {
 }
 
 void update_menu_screen_sonar() {
-  if ( !refresh_menu ) {
+  if ( first_refresh_menu ) {
+    // первоначальная прорисовка
+    first_refresh_menu = false;  
+    for(uint16_t i=XMENU; i<WIDTHMENU+XMENU; i++) {
+      tft.drawFastVLine(i, YMENU, HEIGHTMENU, ILI9341_BLUE);
+      delayMicroseconds(200);
+    }
+    tft.drawRect(XMENU-1, YMENU-1, WIDTHMENU+2, HEIGHTMENU+2, ILI9341_WHITE);
+  }
+  if (refresh_menu) {
     show_menu_sonar();
-    return;
+    refresh_menu = false;
   }
-  refresh_menu = false;
-  
-  //tft.fillRect(XMENU, YMENU, WIDTHMENU, HEIGHTMENU, ILI9341_BLUE);
-  for(uint16_t i=XMENU; i<WIDTHMENU+XMENU; i++) {
-    tft.drawFastVLine(i, YMENU, HEIGHTMENU, ILI9341_BLUE);
-    delayMicroseconds(200);
-  }
-  tft.drawRect(XMENU-1, YMENU-1, WIDTHMENU+2, HEIGHTMENU+2, ILI9341_WHITE);
-  show_menu_sonar();
-  //tft.setCursor( XMENU+110, YMENU+2 ); tft.print(adc_gaz); tft.print(" "); tft.print(adc_rul); tft.print(" ");
 }
 
 void update_menu_screen_kalibr() {
-  if ( !refresh_menu ) {
+  if ( first_refresh_menu ) {
+    first_refresh_menu = false; 
+    for(uint16_t i=XMENU; i<WIDTHMENU+XMENU; i++) {
+      tft.drawFastVLine(i, YMENU, HEIGHTMENU, ILI9341_BLUE);
+      delayMicroseconds(200);
+    }
+    tft.drawRect(XMENU-1, YMENU-1, WIDTHMENU+2, HEIGHTMENU+2, ILI9341_WHITE);
+  }
+  if (refresh_menu) {
     show_menu_kalibr();
-    return;
+    refresh_menu = false;
   }
-  refresh_menu = false;
-  
-  for(uint16_t i=XMENU; i<WIDTHMENU+XMENU; i++) {
-    tft.drawFastVLine(i, YMENU, HEIGHTMENU, ILI9341_BLUE);
-    delayMicroseconds(200);
-  }
-  tft.drawRect(XMENU-1, YMENU-1, WIDTHMENU+2, HEIGHTMENU+2, ILI9341_WHITE);
-  show_menu_kalibr();
 }
 

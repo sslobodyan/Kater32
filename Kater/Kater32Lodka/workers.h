@@ -49,16 +49,23 @@ void update_servo() {
       if ( rul_in_center() ) {
         if (rul_heading == 2*BAD_GRD) {
           if ( (tlm.gps.sat.speed > 10) && (gaz < -30) ) {
-            rul_heading = kurs_gps;
-            init_pid();
-          }
+            if (tm_auto_corr == 0) {
+              tm_auto_corr = millis() + 2000;
+            }
+            if ((tm_auto_corr > 0) && (tm_auto_corr < millis())) {
+              rul_heading = kurs_gps;
+              init_pid();              
+            }
+          } else tm_auto_corr = 0;
         } else {
           rul = -pid_corr(kurs_gps, rul_heading);
         }
       } else {
+        tm_auto_corr = 0;
         rul_heading = 2*BAD_GRD;
       }      
     } else {
+      tm_auto_corr = 0;
       rul_heading = 2*BAD_GRD;
     }
     d = rul;
@@ -94,13 +101,6 @@ void update_workers() {
     autopilote_on( ctrl.point );
   }
 
-  if (tm_no_radio > 0) {
-    if (millis() - tm_no_radio > 1000) { // стопмашина
-      rul = 0;
-      gaz = 0;      
-    }
-  }
-  
   update_servo();
   update_lights();
 

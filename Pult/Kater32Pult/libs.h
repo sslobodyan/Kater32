@@ -60,12 +60,14 @@ String utf8rus(String source)
   return target;
 }
 
-bool is_point_fill( stPoint point ) {
+bool is_point_fill( stPoint point, bool check_distanse ) {
   if ( point.lat == BAD_POINT ) return false; 
   if ( point.lon == BAD_POINT ) return false;
-  // даже запомненные точки но далее 500 метров от домашней считаем пустыми
-  float to_point_from_home = GetDistanceInM( point.lat, point.lon, flash.points[0].lat, flash.points[0].lon);
-  if (to_point_from_home > 500.0) return false;
+  if (check_distanse) {
+    // даже запомненные точки но далее 500 метров от домашней считаем пустыми
+    float to_point_from_home = GetDistanceInM( point.lat, point.lon, flash.points[0].lat, flash.points[0].lon);
+    if (to_point_from_home > 500.0) return false;    
+  }
   return true;
 }
 
@@ -74,10 +76,13 @@ void open_bunker() {
     ctrl.light.bunker = 1;
     tm_bunker = millis() + TIME_BUNKER_OPEN;
     old_point_idx = 99;
-    if ( !is_point_fill( tlm.gps.coord ) ) return;
     if ( point_idx > 0 ) {
-      if ( is_point_fill( flash.points[point_idx])  ) return;
+      if ( !is_point_fill( tlm.gps.coord, true ) ) return;
+      if ( is_point_fill( flash.points[point_idx], true)  ) return; // эта точка уже занята - тько разгрузка
+    } else { // для домашней точки проверяем только наличие координат без дистанции
+      if ( !is_point_fill( tlm.gps.coord, false ) ) return;      
     }
+    
     // запоминаем точку
     flash.points[point_idx].lat = tlm.gps.coord.lat;  
     flash.points[point_idx].lon = tlm.gps.coord.lon;  

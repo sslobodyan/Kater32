@@ -284,7 +284,7 @@ void update_point(){
   old_point_idx = point_idx;
   tft.setCursor(XPOINT, YPOINT);
   tft.setTextSize(4);
-  if ( ! is_point_fill( flash.points[point_idx] ) ) {
+  if ( ! is_point_fill( flash.points[point_idx], true ) ) {
     tft.fillRect(0, YPOINT-3, XSONAR-6, 35, ILI9341_BLACK  );
     tft.setTextColor(ILI9341_WHITE,ILI9341_BLACK);
     tft.print( point_idx );
@@ -486,7 +486,7 @@ void update_distanse(){
     tft.setCursor(XDISTANSE, YDISTANSE);
     tft.setTextSize(2);
     tft.setTextColor(ILI9341_RED,ILI9341_BLACK);
-    if ((to_home < 999.0) && (to_home > 2)) {
+    if ((to_home < 999.0) /* && (to_home > 2) */ ) {
       tft.print("0 ");  
       if (to_home < 10.0) tft.print(" ");
       if (to_home < 100.0) tft.print(" ");

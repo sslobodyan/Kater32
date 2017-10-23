@@ -43,6 +43,10 @@ void setup() {
     save_to_eprom( EEPROM_CNT );
   }
 
+  if ( is_point_fill( flash.points[0], false ) ) {
+    ctrl.home = flash.points[0]; // восстановим домашнюю точку
+  }
+
   Pult.begin(details(ctrl), &HC12);
   Pult.set_mask( (uint8_t) 'C', (uint8_t) 'w' );
   Kater.begin(details(tlm), &HC12);
@@ -97,9 +101,10 @@ void loop() {
 
     send_paket();
     
+    update_screen();
+
     update_key();
     
-    update_screen();
   }
   
 }

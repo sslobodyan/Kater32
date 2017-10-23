@@ -28,7 +28,7 @@ EasyTransfer Kater;
 
 
 #define INTERVAL 500
-
+#define INTERVAL_WORKERS 100
 
 void testI2C() {
   //i2c_init(I2C1);
@@ -133,7 +133,9 @@ void setup() {
 void loop() {
   if ( millis() > tm ) { // нет связи
     LED_OFF;
-    if (tm_no_radio == 0) tm_no_radio = millis();
+    if (tm_no_radio == 0) {
+      tm_no_radio = millis();
+    }
   }
 
   if ( millis() > tm_gps ) {
@@ -149,13 +151,33 @@ void loop() {
     }
   }
 
+  if ((tm_no_radio > 0) && (millis() - tm_no_radio > 1000)) { // стопмашина при кратковременной потере связи
+      if (cnt_no_radio++ > 10) {
+        if (autohome) {
+          DBG.println("Goto HOME!");
+          autopilote_on( ctrl.home );
+          cnt_no_radio = 0;
+        }        
+      }
+      DBG.print("Stop! ");
+      DBG.println(cnt_no_radio);
+      tm_no_radio = millis();
+      ctrl.rul = 0;
+      ctrl.gaz = 0;
+  }
+  
   update_gps();
+
+  if (millis() > tm_workers) {
+    tm_workers = millis() + INTERVAL_WORKERS;
+    update_workers();
+  }
 
   if(Pult.receiveData()){ // обработка принятого пакета
       LED_ON;
       tm_no_radio = 0;
+      cnt_no_radio = 0;
       tm = millis() + INTERVAL;
-      update_workers();
     
       tlm.sonar.delta = ctrl.sonar.delta;
       tlm.sonar.speed = ctrl.sonar.speed;
@@ -163,7 +185,7 @@ void loop() {
       if (ctrl.home.lat < BAD_POINT) { // приняли координаты домашней 0 точки
         home_pnt = ctrl.home;
       }
-
+      tlm.sonar.cnt++; // TODO пока считаем каждую посылку как новое эхо
       Kater.sendData();
   }
 

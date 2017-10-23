@@ -34,7 +34,7 @@ static void ExternSonarInt() { // пришло прерывание от три�
   takeSamples(); // запрашиваем новый сбор эха
 }
 
-static void DMA1_CH1_Event() {
+static void DMA1_CH1_Event() { // закончили сбор эха - буфер заполнен
   sonar_newdata = true;
   ADC1->regs->CR2 &= ~(ADC_CR2_CONT | ADC_CR2_DMA); // stop ADC
   dma_disable(DMA1, DMA_CH1); 
@@ -150,9 +150,7 @@ void sonar_update_buf120() { // отобрать нужное окно из 120 
         if (sr < buf[i+n]) sr = buf[i+n];  
       }
     }
-    
     buf120[idx++] = sr;
-    //DBG.print(sr);DBG.print(",");
   }   
   if (show_max) {
     DBG.print("Sonar MAX "); DBG.println(maximum);
@@ -209,33 +207,39 @@ void print_buf(){
   DBG.print("Sonar(");DBG.print(start);DBG.print("-");DBG.print(len);DBG.print(") ");
   for(i=start; i<start+len; i++) {
     DBG.print(buf[i]);DBG.print(",");
-    delay(4);
+    delay(6);
+    while (HC12.available()) HC12.read(); // устраняем переполнение входного буфера
   }
   DBG.println();
+  DBG.println("OK");
 }
 
 
 void print_buf120(){
   int i, start=0, len=sizeof(buf120)/sizeof(buf120[0]);
-  DBG.print("Buf120 ");
+  DBG.print("Buf120 E");
   for(i=0; i<start+len; i++) {
     DBG.print(buf120[i]);DBG.print(",");
-    delay(4);
+    delay(6);
+    while (HC12.available()) HC12.read(); // устраняем переполнение входного буфера
   }
   DBG.println();
+  DBG.println("OK");
 }
 
 void sonar_update(){
+  if (show_sonar) {
+    print_buf();
+    show_sonar = false;
+  }
+  if (show_120) {
+    print_buf120();
+    show_120 = false;
+  }
   // занизим чуйку на первых метрах TODO возможно это индивидуально для каждого эхолота
   for (int i=140; i<240; i++) {
     buf[i] -= 400;
     if (buf[i] < 0) buf[i] = 0;
-  }
-  if (show_sonar) {
-    print_buf();
-  }
-  if (show_120) {
-    print_buf120();
   }
   sonar_update_buf120();  
   

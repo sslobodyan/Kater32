@@ -57,12 +57,13 @@ uint16_t adc_rul, adc_gaz;
 bool is_menu = false; // перешли в режим меню и джойстик теперь управляет менюшками
 bool refresh_menu=false;
 byte id_menu=0;
+bool first_refresh_menu=true;
 
 void update_menu_screen_sonar();
 void update_menu_screen_kalibr();
 void show_menu1();
 void open_bunker();
-bool is_point_fill( stPoint point );
+bool is_point_fill( stPoint point, bool checkdistanse );
 void update_test(uint16_t data);
 
 //#define SER Serial3 //B10

@@ -96,6 +96,11 @@ void do_bt_command() { // разборка команды и выполнени�
     DBG.print(show_120);
     DBG.println( F(" OK") );
   }
+  else if (stringOne == F("autohome")) {
+    autohome = !autohome;
+    DBG.print(autohome);
+    DBG.println( F(" OK") );
+  }
   else if (stringOne == F("at")) {
     DBG.println( F("OK") );
   }
@@ -192,6 +197,7 @@ void do_bt_command() { // разборка команды и выполнени�
     DBG.println( F("showmax") );
     DBG.println( F("showall") );
     DBG.println( F("autocorr") );
+    DBG.println( F("autohome") );
     DBG.println( F("gaz") );
     DBG.println( F("OK") );
   }
@@ -209,6 +215,7 @@ void do_bt_command() { // разборка команды и выполнени�
     DBG.print( F("show120 ") );DBG.println(show_120);
     DBG.print( F("showmax ") );DBG.println(show_max);
     DBG.print( F("autocorr ") );DBG.println(auto_corr);
+    DBG.print( F("autohome ") );DBG.println(autohome);
     DBG.print( F("gaz ") );DBG.println(flash.gaz);
     DBG.println( F("OK") );
   }

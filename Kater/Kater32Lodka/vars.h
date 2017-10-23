@@ -19,7 +19,7 @@ int8_t rul, gaz, bunker;
 
 
 
-uint32_t tm, tm_gps, tm_sensors, tm_no_radio=0;
+uint32_t tm, tm_gps, tm_sensors, tm_no_radio=0, tm_auto_corr=0, tm_workers;
 
 uint8_t base_heading = 0;
 float kurs_gps = 0;
@@ -29,8 +29,11 @@ uint16_t sum_base_heading = 0;
 int8_t cnt_base_heading = CNT_HEADING_SAMPLES;
 
 float pid_kp, pid_kd, pid_ki, min_pi, max_pi;
+static float old_pid_error;
+static float old_res_i;
 
-bool show_sonar = false, show_rul=false, show_deep=false, auto_corr=false, show_pid=false, show_max=false, show_120=false;
+bool show_sonar = false, show_rul=false, show_deep=false, auto_corr=false, show_pid=false, show_max=false, show_120=false, autohome=true;
+int cnt_no_radio=0;
 
 int maximum; // max buf120
 
