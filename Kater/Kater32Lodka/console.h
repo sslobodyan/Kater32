@@ -182,6 +182,16 @@ void do_bt_command() { // разборка команды и выполнени�
     DBG.print("(");DBG.print(max_pi,3);DBG.print(")");
     DBG.println( F(" OK") );
   }
+  else if (stringOne == F("diam")) {
+    if (stringTwo.length() >= 1) {
+      flash.diam = stringTwo.toInt();
+      save_to_eprom( EEPROM_DIAM );
+      init_pid();
+    }
+    DBG.print(flash.diam);
+    DBG.print("(");DBG.print( diam,1 );DBG.print(")");
+    DBG.println( F(" OK") );
+  }
   else if (stringOne == F("help")) {
     DBG.println( F("pidkd") );
     DBG.println( F("pidki") );
@@ -199,6 +209,7 @@ void do_bt_command() { // разборка команды и выполнени�
     DBG.println( F("autocorr") );
     DBG.println( F("autohome") );
     DBG.println( F("gaz") );
+    DBG.println( F("diam") );
     DBG.println( F("OK") );
   }
   else if (stringOne == F("showall")) {
@@ -217,6 +228,7 @@ void do_bt_command() { // разборка команды и выполнени�
     DBG.print( F("autocorr ") );DBG.println(auto_corr);
     DBG.print( F("autohome ") );DBG.println(autohome);
     DBG.print( F("gaz ") );DBG.println(flash.gaz);
+    DBG.print( F("diam ") );DBG.println(flash.diam);
     DBG.println( F("OK") );
   }
   

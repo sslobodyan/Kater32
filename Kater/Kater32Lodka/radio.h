@@ -28,7 +28,7 @@ struct stSat { // 3
   uint8_t cnt:6; // 1 количество спутников
   uint8_t fix:1; // 3Д фикс
   uint8_t present:1; // принят хотя бы один нормальный кадр от ГПС приемника
-  uint8_t second:6; // текущая секунда
+  uint8_t second:6; // текущая секунда ??? зачем
   uint8_t autopilot:1; // идем по автопилоту
   uint8_t bunker:1; // бункер открыт
 };
@@ -50,7 +50,7 @@ struct stGps { // 12
 
 
 ////////////////////////// передается на катер //////////////////
-struct stControl { // 22
+struct stControl { // 23
   int8_t rul;
   int8_t gaz;
   int8_t trim;
@@ -67,7 +67,7 @@ struct stTelemetry { // 80
   uint8_t bort; // 1
   uint8_t tok;  // 1
   uint8_t kurs; // 1
-  uint8_t rezerv; // может состояние света, кузова и автопилот - пока пишем угол коррекции автопилота
+  uint8_t rezerv; // может состояние света, кузова и автопилот 
   stGps gps; // 12
   stSonar sonar; // 64
 };

@@ -23,6 +23,9 @@ struct stFlash { // надо выровнять на 2 байта
   int16_t min_pi;
   //8 
   int16_t max_pi;
+  //9 
+  int8_t diam;
+  int8_t rezerv;
 } flash;
 
 #define EEPROM_CNT 1
@@ -33,6 +36,7 @@ struct stFlash { // надо выровнять на 2 байта
 #define EEPROM_GAZ 6
 #define EEPROM_MINPI 7
 #define EEPROM_MAXPI 8
+#define EEPROM_DIAM 8
 
 
 
@@ -113,5 +117,22 @@ void init_flash(void) {
   save_to_eprom();
 }
 
-
+/*
+showall
+pidkp 2000
+pidki 5000
+pidkd 5000
+minpi 0
+maxpi 32000
+tresholddno 10
+sonarkoeff 150
+showdeep 0
+showrul 0
+showsonar 0
+show120 0
+showmax 0
+autocorr 0
+autohome 1
+gaz 100
+*/
 

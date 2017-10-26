@@ -125,8 +125,13 @@ bool update_autopilote() {
     old_corr_autopilote = corr_autopilote;
     corr_autopilote = pid_corr(kurs_gps, heading);
 
-    float to_point = GetDistanceInM( lat, lon, dest_lat, dest_lon );
-    if ((to_point < 2.0) || (to_point > 502.0)) {
+    to_point = GetDistanceInM( lat, lon, dest_lat, dest_lon );
+    if (to_point < diam) {
+      DBG.print("In WP! "); DBG.println( to_point );
+      autopilote_off();
+      return false;
+    } 
+    else if (to_point > 500.0) {
       DBG.print("Wrong Distanse "); DBG.println( to_point );
       autopilote_off();
       return false;

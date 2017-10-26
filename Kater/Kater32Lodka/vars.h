@@ -31,6 +31,8 @@ int8_t cnt_base_heading = CNT_HEADING_SAMPLES;
 float pid_kp, pid_kd, pid_ki, min_pi, max_pi;
 static float old_pid_error;
 static float old_res_i;
+float to_point; // расстояние от катера до целевой точки в режиме автопилота
+float diam; // диаметр целевой точки в метрах
 
 bool show_sonar = false, show_rul=false, show_deep=false, auto_corr=false, show_pid=false, show_max=false, show_120=false, autohome=true;
 int cnt_no_radio=0;
